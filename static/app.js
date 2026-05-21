@@ -96,7 +96,12 @@ function updateMetrics(payload) {
 
 function renderResults() {
   if (!answers.length) {
-    resultsList.innerHTML = "";
+    resultsList.innerHTML = `
+      <div class="results-empty">
+        <strong>No drafts yet</strong>
+        <p>Load sample questions or add customer questions, then generate drafts to see evidence quality.</p>
+      </div>
+    `;
     return;
   }
 

@@ -677,6 +677,8 @@ textarea:focus-visible {
 
   .sidebar {
     display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .metric-stack {
@@ -720,9 +722,8 @@ textarea:focus-visible {
     width: 100%;
   }
 
-  .primary-button,
-  .ghost-button {
-    flex: 1 1 100%;
+  .button-row button {
+    flex: 1 1 auto;
   }
 
   .evidence-strip {

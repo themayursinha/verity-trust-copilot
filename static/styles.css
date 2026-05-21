@@ -653,6 +653,10 @@ textarea:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .evidence-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .result-list {
     border-right: 0;
     border-bottom: 1px solid var(--line);

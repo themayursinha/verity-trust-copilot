@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Security Questionnaire Copilot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="Security questionnaire workspace">
+        <aside class="sidebar">
+          <div class="brand-block">
+            <div class="brand-mark" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div>
+              <p class="eyebrow">Jamie trust team</p>
+              <h1>Security Questionnaire Copilot</h1>
+            </div>
+          </div>
+
+          <div class="metric-stack" aria-label="Run summary">
+            <div class="metric">
+              <span id="questionsCount">0</span>
+              <small>questions</small>
+            </div>
+            <div class="metric">
+              <span id="reviewCount">0</span>
+              <small>reviews</small>
+            </div>
+            <div class="metric">
+              <span id="sourceCount">0</span>
+              <small>sources</small>
+            </div>
+          </div>
+
+          <div class="trust-summary" aria-label="Evidence library summary">
+            <div class="trust-summary-header">
+              <span>Evidence library</span>
+              <strong id="sidebarEvidenceCount">0</strong>
+            </div>
+            <div class="trust-row">
+              <span>Fresh</span>
+              <b id="freshEvidenceCount">0</b>
+            </div>
+            <div class="trust-row">
+              <span>Stale</span>
+              <b id="staleEvidenceCount">0</b>
+            </div>
+            <div class="trust-row">
+              <span>Outdated</span>
+              <b id="outdatedEvidenceCount">0</b>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main-panel">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">No external APIs</p>
+              <h2>Draft answers from approved evidence only</h2>
+            </div>
+            <div class="top-actions">
+              <label for="asOfDate">Freshness date</label>
+              <input id="asOfDate" type="date">
+            </div>
+          </header>
+
+          <section class="composer" aria-label="Question input">
+            <div class="composer-header">
+              <div>
+                <h3>Ask a customer security question</h3>
+                <p>One question per line.</p>
+              </div>
+              <div class="button-row">
+                <button id="loadSampleBtn" class="ghost-button" type="button">Load sample</button>
+                <button id="runBtn" class="primary-button" type="button">Generate drafts</button>
+              </div>
+            </div>
+            <textarea id="questionInput" spellcheck="true"></textarea>
+            <p id="statusText" class="status-text">Ready.</p>
+          </section>
+
+          <section class="evidence-panel" aria-label="Evidence library">
+            <div class="evidence-header">
+              <div>
+                <h3>Evidence library</h3>
+                <p id="evidenceStatus">Loading evidence...</p>
+              </div>
+              <div class="button-row">
+                <input id="evidenceFile" class="file-input" type="file" accept="application/json,.json">
+                <button id="uploadEvidenceBtn" class="ghost-button" type="button">Upload JSON</button>
+                <button id="storeEvidenceBtn" class="primary-button" type="button">Store evidence</button>
+              </div>
+            </div>
+            <div class="evidence-form">
+              <input id="evidenceTitle" type="text" placeholder="Evidence title">
+              <input id="evidenceType" type="text" placeholder="Type, for example policy">
+              <input id="evidenceOwner" type="text" placeholder="Owner">
+              <input id="evidenceReviewed" type="date">
+              <input id="evidenceFrameworks" type="text" placeholder="Frameworks, comma separated">
+              <input id="evidenceSummary" type="text" placeholder="Summary">
+              <textarea id="evidenceSnippets" placeholder="Approved evidence snippets, one per line"></textarea>
+            </div>
+          </section>
+
+          <section class="results-grid" aria-label="Generated answers">
+            <div class="result-list" id="resultsList"></div>
+            <aside class="detail-panel" id="detailPanel">
+              <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true"></div>
+                <h3>Select or generate an answer</h3>
+                <p>Confidence, citations, and freshness checks will appear here.</p>
+              </div>
+            </aside>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/static/evidence_quality.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

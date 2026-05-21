@@ -106,7 +106,7 @@ function renderResults() {
       const quality = answerQuality(answer);
       const review = answer.needs_human_review ? '<span class="meta-chip warning-chip">Human review</span>' : "";
       return `
-        <button class="answer-card${active}" type="button" data-index="${index}">
+        <article class="answer-card${active}" role="button" tabindex="0" data-index="${index}">
           <div class="card-top">
             <p class="question-title">${escapeHtml(answer.question)}</p>
             <span class="badge ${confidenceClass(answer.confidence)}">${escapeHtml(answer.confidence)}</span>
@@ -118,16 +118,26 @@ function renderResults() {
             <span class="meta-chip">${escapeHtml(quality.freshness.label)}</span>
             ${review}
           </div>
-        </button>
+        </article>
       `;
     })
     .join("");
 
+  function selectCard(card) {
+    selectedIndex = Number(card.dataset.index);
+    renderResults();
+    renderDetail();
+  }
+
   for (const card of resultsList.querySelectorAll(".answer-card")) {
-    card.addEventListener("click", () => {
-      selectedIndex = Number(card.dataset.index);
-      renderResults();
-      renderDetail();
+    card.addEventListener("click", () => selectCard(card));
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        selectCard(card);
+      } else if (event.key === " ") {
+        event.preventDefault();
+        selectCard(card);
+      }
     });
   }
 }
@@ -174,10 +184,11 @@ function renderDetail() {
 }
 
 function renderFreshness(items) {
-  if (!items.length) {
+  const freshnessItems = Array.isArray(items) ? items : [];
+  if (!freshnessItems.length) {
     return '<div class="source-item"><p>No matching evidence found.</p></div>';
   }
-  return items
+  return freshnessItems
     .map(
       (item) => `
         <div class="source-item">
@@ -191,10 +202,11 @@ function renderFreshness(items) {
 }
 
 function renderSources(citations) {
-  if (!citations.length) {
+  const citationItems = Array.isArray(citations) ? citations : [];
+  if (!citationItems.length) {
     return '<div class="source-item"><p>No citations available. Do not send an answer without review.</p></div>';
   }
-  return citations
+  return citationItems
     .map(
       (source) => `
         <div class="source-item">

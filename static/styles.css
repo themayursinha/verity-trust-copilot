@@ -97,7 +97,7 @@ button {
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #74828a;
+  color: #52636e;
   font-size: 12px;
   font-weight: 750;
   letter-spacing: 0;
@@ -457,7 +457,7 @@ textarea:focus-visible {
 
 .badge.medium {
   background: #fff2d9;
-  color: var(--amber);
+  color: #8a520f;
 }
 
 .badge.low {

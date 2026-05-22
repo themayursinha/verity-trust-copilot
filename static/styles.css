@@ -711,6 +711,46 @@ textarea:focus-visible {
 }
 
 @media (max-width: 560px) {
+  .sidebar,
+  .main-panel {
+    display: contents;
+  }
+
+  .brand-block {
+    order: 0;
+    padding: 24px 18px 12px;
+    background: #152026;
+  }
+
+  .composer {
+    order: 1;
+  }
+
+  .metric-stack {
+    order: 2;
+    padding: 18px;
+    background: #152026;
+  }
+
+  .trust-summary {
+    order: 3;
+    padding: 18px;
+    border-top: 0;
+    background: #152026;
+  }
+
+  .results-grid {
+    order: 4;
+  }
+
+  .evidence-panel {
+    order: 5;
+  }
+
+  .topbar {
+    order: 6;
+  }
+
   .topbar,
   .composer,
   .evidence-panel {

@@ -1,0 +1,1136 @@
+{
+  "generated_at": "2026-05-22T11:13:59",
+  "as_of_date": "2026-05-22",
+  "summary": {
+    "questions_processed": 10,
+    "confidence_counts": {
+      "high": 7,
+      "medium": 2,
+      "low": 1
+    },
+    "human_reviews_required": 1
+  },
+  "answers": [
+    {
+      "question": "Are you ISO 27001 certified or aligned, and how do you manage your ISMS?",
+      "answer": "Draft answer based on approved evidence: Jamie operates an ISO 27001-aligned ISMS covering risk management, asset inventory, access control, supplier security, incident response, and secure development. [S1:iso-27001-isms] Information security policies are reviewed at least annually and after material business, product, or regulatory changes. [S2:iso-27001-isms] Internal control reviews track findings, remediation owners, due dates, and evidence of closure. [S3:iso-27001-isms] Vanta monitors employee MFA, device encryption, screen lock, antivirus status, security training completion, and offboarding tasks. [S4:vanta-control-evidence]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "iso-27001-isms",
+          "last_reviewed": "2026-04-15",
+          "age_days": 37,
+          "status": "fresh"
+        },
+        {
+          "source": "iso-27001-isms",
+          "last_reviewed": "2026-04-15",
+          "age_days": 37,
+          "status": "fresh"
+        },
+        {
+          "source": "iso-27001-isms",
+          "last_reviewed": "2026-04-15",
+          "age_days": 37,
+          "status": "fresh"
+        },
+        {
+          "source": "vanta-control-evidence",
+          "last_reviewed": "2026-05-01",
+          "age_days": 21,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:iso-27001-isms",
+          "source_id": "iso-27001-isms",
+          "title": "ISO 27001 Information Security Management System",
+          "type": "certification",
+          "frameworks": [
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "A.5.1",
+            "A.5.2",
+            "A.8.8"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-04-15",
+          "snippet": "Jamie operates an ISO 27001-aligned ISMS covering risk management, asset inventory, access control, supplier security, incident response, and secure development.",
+          "score": 10.869,
+          "matched_terms": [
+            "27001",
+            "certification",
+            "isms",
+            "iso"
+          ]
+        },
+        {
+          "citation": "S2:iso-27001-isms",
+          "source_id": "iso-27001-isms",
+          "title": "ISO 27001 Information Security Management System",
+          "type": "certification",
+          "frameworks": [
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "A.5.1",
+            "A.5.2",
+            "A.8.8"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-04-15",
+          "snippet": "Information security policies are reviewed at least annually and after material business, product, or regulatory changes.",
+          "score": 8.191,
+          "matched_terms": [
+            "27001",
+            "certification",
+            "iso"
+          ]
+        },
+        {
+          "citation": "S3:iso-27001-isms",
+          "source_id": "iso-27001-isms",
+          "title": "ISO 27001 Information Security Management System",
+          "type": "certification",
+          "frameworks": [
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "A.5.1",
+            "A.5.2",
+            "A.8.8"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-04-15",
+          "snippet": "Internal control reviews track findings, remediation owners, due dates, and evidence of closure.",
+          "score": 8.191,
+          "matched_terms": [
+            "27001",
+            "certification",
+            "iso"
+          ]
+        },
+        {
+          "citation": "S4:vanta-control-evidence",
+          "source_id": "vanta-control-evidence",
+          "title": "Vanta Evidence Export",
+          "type": "control-evidence",
+          "frameworks": [
+            "SOC 2",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "CC6.1",
+            "CC7.2",
+            "A.8.15"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-05-01",
+          "snippet": "Vanta monitors employee MFA, device encryption, screen lock, antivirus status, security training completion, and offboarding tasks.",
+          "score": 6.148,
+          "matched_terms": [
+            "27001",
+            "iso"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Do you encrypt customer meeting data at rest and in transit?",
+      "answer": "Draft answer based on approved evidence: Customer data is encrypted in transit using TLS 1.2 or higher for application, API, and administrative connections. [S1:encryption-and-key-management] Customer data stored in managed databases, object storage, backups, and logs is encrypted at rest using cloud-provider managed encryption. [S2:encryption-and-key-management] Administrative access to encryption and key-management settings is restricted to approved infrastructure administrators and logged. [S3:encryption-and-key-management]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "encryption-and-key-management",
+          "last_reviewed": "2026-04-01",
+          "age_days": 51,
+          "status": "fresh"
+        },
+        {
+          "source": "encryption-and-key-management",
+          "last_reviewed": "2026-04-01",
+          "age_days": 51,
+          "status": "fresh"
+        },
+        {
+          "source": "encryption-and-key-management",
+          "last_reviewed": "2026-04-01",
+          "age_days": 51,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:encryption-and-key-management",
+          "source_id": "encryption-and-key-management",
+          "title": "Encryption and Key Management Standard",
+          "type": "standard",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR"
+          ],
+          "control_ids": [
+            "A.8.24",
+            "GDPR Art. 32"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2026-04-01",
+          "snippet": "Customer data is encrypted in transit using TLS 1.2 or higher for application, API, and administrative connections.",
+          "score": 7.569,
+          "matched_terms": [
+            "encryption",
+            "key",
+            "rest",
+            "tls",
+            "transit"
+          ]
+        },
+        {
+          "citation": "S2:encryption-and-key-management",
+          "source_id": "encryption-and-key-management",
+          "title": "Encryption and Key Management Standard",
+          "type": "standard",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR"
+          ],
+          "control_ids": [
+            "A.8.24",
+            "GDPR Art. 32"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2026-04-01",
+          "snippet": "Customer data stored in managed databases, object storage, backups, and logs is encrypted at rest using cloud-provider managed encryption.",
+          "score": 7.334,
+          "matched_terms": [
+            "encryption",
+            "key",
+            "rest",
+            "tls",
+            "transit"
+          ]
+        },
+        {
+          "citation": "S3:encryption-and-key-management",
+          "source_id": "encryption-and-key-management",
+          "title": "Encryption and Key Management Standard",
+          "type": "standard",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR"
+          ],
+          "control_ids": [
+            "A.8.24",
+            "GDPR Art. 32"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2026-04-01",
+          "snippet": "Administrative access to encryption and key-management settings is restricted to approved infrastructure administrators and logged.",
+          "score": 6.928,
+          "matched_terms": [
+            "encryption",
+            "key",
+            "rest",
+            "tls",
+            "transit"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Do you use our meeting transcripts or summaries to train AI models?",
+      "answer": "Draft answer based on approved evidence: AI processing controls include access restrictions, purpose limitation, vendor review, and documented handling rules for prompts, transcripts, and generated summaries. [S1:ai-data-usage] Jamie does not use customer meeting content to train third-party foundation models unless the customer has explicitly opted in through a written agreement. [S2:ai-data-usage] Customer meeting content is used to provide and improve the contracted Jamie service according to customer instructions and applicable agreements. [S3:ai-data-usage]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "ai-data-usage",
+          "last_reviewed": "2026-04-30",
+          "age_days": 22,
+          "status": "fresh"
+        },
+        {
+          "source": "ai-data-usage",
+          "last_reviewed": "2026-04-30",
+          "age_days": 22,
+          "status": "fresh"
+        },
+        {
+          "source": "ai-data-usage",
+          "last_reviewed": "2026-04-30",
+          "age_days": 22,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:ai-data-usage",
+          "source_id": "ai-data-usage",
+          "title": "AI Data Usage Commitment",
+          "type": "product-privacy-commitment",
+          "frameworks": [
+            "GDPR",
+            "AI Governance"
+          ],
+          "control_ids": [
+            "Purpose Limitation",
+            "Customer Data Controls"
+          ],
+          "owner": "Product Legal",
+          "last_reviewed": "2026-04-30",
+          "snippet": "AI processing controls include access restrictions, purpose limitation, vendor review, and documented handling rules for prompts, transcripts, and generated summaries.",
+          "score": 20.12,
+          "matched_terms": [
+            "ai",
+            "foundation",
+            "meeting",
+            "models",
+            "prompts",
+            "summaries",
+            "train",
+            "transcripts",
+            "use"
+          ]
+        },
+        {
+          "citation": "S2:ai-data-usage",
+          "source_id": "ai-data-usage",
+          "title": "AI Data Usage Commitment",
+          "type": "product-privacy-commitment",
+          "frameworks": [
+            "GDPR",
+            "AI Governance"
+          ],
+          "control_ids": [
+            "Purpose Limitation",
+            "Customer Data Controls"
+          ],
+          "owner": "Product Legal",
+          "last_reviewed": "2026-04-30",
+          "snippet": "Jamie does not use customer meeting content to train third-party foundation models unless the customer has explicitly opted in through a written agreement.",
+          "score": 16.447,
+          "matched_terms": [
+            "ai",
+            "foundation",
+            "meeting",
+            "models",
+            "train",
+            "use"
+          ]
+        },
+        {
+          "citation": "S3:ai-data-usage",
+          "source_id": "ai-data-usage",
+          "title": "AI Data Usage Commitment",
+          "type": "product-privacy-commitment",
+          "frameworks": [
+            "GDPR",
+            "AI Governance"
+          ],
+          "control_ids": [
+            "Purpose Limitation",
+            "Customer Data Controls"
+          ],
+          "owner": "Product Legal",
+          "last_reviewed": "2026-04-30",
+          "snippet": "Customer meeting content is used to provide and improve the contracted Jamie service according to customer instructions and applicable agreements.",
+          "score": 14.436,
+          "matched_terms": [
+            "ai",
+            "foundation",
+            "meeting",
+            "models",
+            "train",
+            "use"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "How long do you retain meeting transcripts and can customers request deletion?",
+      "answer": "Draft answer based on approved evidence: Meeting transcripts, summaries, and related customer content follow customer-configured retention settings where available. [S1:data-retention-deletion] Deletion requests for customer content are handled through documented support and administrative workflows with completion tracking. [S2:data-retention-deletion] Backups age out according to backup retention schedules; restored data remains subject to the active deletion and retention process. [S3:data-retention-deletion] Jamie acts as a processor for customer meeting content and processes personal data according to customer instructions under a data processing agreement. [S4:gdpr-privacy-program]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "data-retention-deletion",
+          "last_reviewed": "2026-01-18",
+          "age_days": 124,
+          "status": "fresh"
+        },
+        {
+          "source": "data-retention-deletion",
+          "last_reviewed": "2026-01-18",
+          "age_days": 124,
+          "status": "fresh"
+        },
+        {
+          "source": "data-retention-deletion",
+          "last_reviewed": "2026-01-18",
+          "age_days": 124,
+          "status": "fresh"
+        },
+        {
+          "source": "gdpr-privacy-program",
+          "last_reviewed": "2026-03-10",
+          "age_days": 73,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:data-retention-deletion",
+          "source_id": "data-retention-deletion",
+          "title": "Meeting Data Retention and Deletion Policy",
+          "type": "policy",
+          "frameworks": [
+            "GDPR",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "GDPR Art. 5(1)(e)",
+            "A.8.10"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-01-18",
+          "snippet": "Meeting transcripts, summaries, and related customer content follow customer-configured retention settings where available.",
+          "score": 6.178,
+          "matched_terms": [
+            "deletion",
+            "meeting",
+            "transcripts"
+          ]
+        },
+        {
+          "citation": "S2:data-retention-deletion",
+          "source_id": "data-retention-deletion",
+          "title": "Meeting Data Retention and Deletion Policy",
+          "type": "policy",
+          "frameworks": [
+            "GDPR",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "GDPR Art. 5(1)(e)",
+            "A.8.10"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-01-18",
+          "snippet": "Deletion requests for customer content are handled through documented support and administrative workflows with completion tracking.",
+          "score": 4.485,
+          "matched_terms": [
+            "deletion",
+            "meeting"
+          ]
+        },
+        {
+          "citation": "S3:data-retention-deletion",
+          "source_id": "data-retention-deletion",
+          "title": "Meeting Data Retention and Deletion Policy",
+          "type": "policy",
+          "frameworks": [
+            "GDPR",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "GDPR Art. 5(1)(e)",
+            "A.8.10"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-01-18",
+          "snippet": "Backups age out according to backup retention schedules; restored data remains subject to the active deletion and retention process.",
+          "score": 4.485,
+          "matched_terms": [
+            "deletion",
+            "meeting"
+          ]
+        },
+        {
+          "citation": "S4:gdpr-privacy-program",
+          "source_id": "gdpr-privacy-program",
+          "title": "GDPR Privacy and Data Protection Program",
+          "type": "policy",
+          "frameworks": [
+            "GDPR"
+          ],
+          "control_ids": [
+            "GDPR Art. 5",
+            "GDPR Art. 28",
+            "GDPR Art. 32"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-03-10",
+          "snippet": "Jamie acts as a processor for customer meeting content and processes personal data according to customer instructions under a data processing agreement.",
+          "score": 3.386,
+          "matched_terms": [
+            "meeting",
+            "request"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Do you maintain a list of subprocessors and notify customers about changes?",
+      "answer": "Draft answer based on approved evidence: Jamie maintains a current subprocessor list that identifies hosting, analytics, customer support, and AI infrastructure providers where applicable. [S1:subprocessor-register] Customers are notified of material subprocessor changes according to the data processing agreement. [S2:subprocessor-register] Subprocessors are reviewed before onboarding for security posture, data processing role, transfer mechanism, and contractual commitments. [S3:subprocessor-register] The privacy program includes data minimization, purpose limitation, access restrictions, subprocessor due diligence, and data subject request support. [S4:gdpr-privacy-program]",
+      "confidence": "medium",
+      "needs_human_review": false,
+      "confidence_rationale": "Relevant evidence was found, but coverage is narrower or includes stale evidence that should be checked before sending.",
+      "freshness": [
+        {
+          "source": "subprocessor-register",
+          "last_reviewed": "2026-05-05",
+          "age_days": 17,
+          "status": "fresh"
+        },
+        {
+          "source": "subprocessor-register",
+          "last_reviewed": "2026-05-05",
+          "age_days": 17,
+          "status": "fresh"
+        },
+        {
+          "source": "subprocessor-register",
+          "last_reviewed": "2026-05-05",
+          "age_days": 17,
+          "status": "fresh"
+        },
+        {
+          "source": "gdpr-privacy-program",
+          "last_reviewed": "2026-03-10",
+          "age_days": 73,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:subprocessor-register",
+          "source_id": "subprocessor-register",
+          "title": "Subprocessor Register",
+          "type": "register",
+          "frameworks": [
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "GDPR Art. 28",
+            "Third-Party Risk"
+          ],
+          "owner": "Legal",
+          "last_reviewed": "2026-05-05",
+          "snippet": "Jamie maintains a current subprocessor list that identifies hosting, analytics, customer support, and AI infrastructure providers where applicable.",
+          "score": 3.529,
+          "matched_terms": [
+            "list",
+            "subprocessor",
+            "third-party"
+          ]
+        },
+        {
+          "citation": "S2:subprocessor-register",
+          "source_id": "subprocessor-register",
+          "title": "Subprocessor Register",
+          "type": "register",
+          "frameworks": [
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "GDPR Art. 28",
+            "Third-Party Risk"
+          ],
+          "owner": "Legal",
+          "last_reviewed": "2026-05-05",
+          "snippet": "Customers are notified of material subprocessor changes according to the data processing agreement.",
+          "score": 3.529,
+          "matched_terms": [
+            "changes",
+            "subprocessor",
+            "third-party"
+          ]
+        },
+        {
+          "citation": "S3:subprocessor-register",
+          "source_id": "subprocessor-register",
+          "title": "Subprocessor Register",
+          "type": "register",
+          "frameworks": [
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "GDPR Art. 28",
+            "Third-Party Risk"
+          ],
+          "owner": "Legal",
+          "last_reviewed": "2026-05-05",
+          "snippet": "Subprocessors are reviewed before onboarding for security posture, data processing role, transfer mechanism, and contractual commitments.",
+          "score": 3.399,
+          "matched_terms": [
+            "subprocessor",
+            "subprocessors",
+            "third-party"
+          ]
+        },
+        {
+          "citation": "S4:gdpr-privacy-program",
+          "source_id": "gdpr-privacy-program",
+          "title": "GDPR Privacy and Data Protection Program",
+          "type": "policy",
+          "frameworks": [
+            "GDPR"
+          ],
+          "control_ids": [
+            "GDPR Art. 5",
+            "GDPR Art. 28",
+            "GDPR Art. 32"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-03-10",
+          "snippet": "The privacy program includes data minimization, purpose limitation, access restrictions, subprocessor due diligence, and data subject request support.",
+          "score": 2.455,
+          "matched_terms": [
+            "subprocessor",
+            "subprocessors"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "How is employee access to production and customer data controlled?",
+      "answer": "Draft answer based on approved evidence: Access is reviewed quarterly for production systems, administrative tools, identity groups, and privileged roles. [S1:access-control] Access reviews are tracked quarterly for production systems, identity provider groups, administrative roles, and customer-data tools. [S2:vanta-control-evidence] Production and customer-data system access requires SSO, MFA, manager approval, and least-privilege role assignment. [S3:access-control] Vanta monitors employee MFA, device encryption, screen lock, antivirus status, security training completion, and offboarding tasks. [S4:vanta-control-evidence]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "access-control",
+          "last_reviewed": "2026-03-22",
+          "age_days": 61,
+          "status": "fresh"
+        },
+        {
+          "source": "vanta-control-evidence",
+          "last_reviewed": "2026-05-01",
+          "age_days": 21,
+          "status": "fresh"
+        },
+        {
+          "source": "access-control",
+          "last_reviewed": "2026-03-22",
+          "age_days": 61,
+          "status": "fresh"
+        },
+        {
+          "source": "vanta-control-evidence",
+          "last_reviewed": "2026-05-01",
+          "age_days": 21,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:access-control",
+          "source_id": "access-control",
+          "title": "Access Control and Joiner-Mover-Leaver Procedure",
+          "type": "procedure",
+          "frameworks": [
+            "ISO 27001",
+            "SOC 2"
+          ],
+          "control_ids": [
+            "A.5.15",
+            "A.5.18",
+            "CC6.2"
+          ],
+          "owner": "IT",
+          "last_reviewed": "2026-03-22",
+          "snippet": "Access is reviewed quarterly for production systems, administrative tools, identity groups, and privileged roles.",
+          "score": 9.056,
+          "matched_terms": [
+            "access",
+            "least",
+            "mfa",
+            "offboarding",
+            "privilege",
+            "production",
+            "roles",
+            "sso"
+          ]
+        },
+        {
+          "citation": "S2:vanta-control-evidence",
+          "source_id": "vanta-control-evidence",
+          "title": "Vanta Evidence Export",
+          "type": "control-evidence",
+          "frameworks": [
+            "SOC 2",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "CC6.1",
+            "CC7.2",
+            "A.8.15"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-05-01",
+          "snippet": "Access reviews are tracked quarterly for production systems, identity provider groups, administrative roles, and customer-data tools.",
+          "score": 9.009,
+          "matched_terms": [
+            "access",
+            "employee",
+            "mfa",
+            "production",
+            "roles"
+          ]
+        },
+        {
+          "citation": "S3:access-control",
+          "source_id": "access-control",
+          "title": "Access Control and Joiner-Mover-Leaver Procedure",
+          "type": "procedure",
+          "frameworks": [
+            "ISO 27001",
+            "SOC 2"
+          ],
+          "control_ids": [
+            "A.5.15",
+            "A.5.18",
+            "CC6.2"
+          ],
+          "owner": "IT",
+          "last_reviewed": "2026-03-22",
+          "snippet": "Production and customer-data system access requires SSO, MFA, manager approval, and least-privilege role assignment.",
+          "score": 8.659,
+          "matched_terms": [
+            "access",
+            "least",
+            "mfa",
+            "offboarding",
+            "privilege",
+            "production",
+            "sso"
+          ]
+        },
+        {
+          "citation": "S4:vanta-control-evidence",
+          "source_id": "vanta-control-evidence",
+          "title": "Vanta Evidence Export",
+          "type": "control-evidence",
+          "frameworks": [
+            "SOC 2",
+            "ISO 27001"
+          ],
+          "control_ids": [
+            "CC6.1",
+            "CC7.2",
+            "A.8.15"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-05-01",
+          "snippet": "Vanta monitors employee MFA, device encryption, screen lock, antivirus status, security training completion, and offboarding tasks.",
+          "score": 7.498,
+          "matched_terms": [
+            "access",
+            "employee",
+            "mfa",
+            "offboarding"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "What is your incident response process and do you support GDPR breach notification?",
+      "answer": "Draft answer based on approved evidence: Potential personal data breaches are assessed for regulatory and customer notification obligations, including GDPR timing requirements where applicable. [S1:incident-response] Security incidents are triaged by severity, assigned an incident owner, and tracked through containment, eradication, recovery, and post-incident review. [S2:incident-response] Incident exercises and tabletop reviews are used to test roles, escalation paths, communication templates, and evidence collection. [S3:incident-response] Technical and organizational measures include encryption, least-privilege access, audit logging, incident response, and retention controls. [S4:gdpr-privacy-program]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "incident-response",
+          "last_reviewed": "2026-02-14",
+          "age_days": 97,
+          "status": "fresh"
+        },
+        {
+          "source": "incident-response",
+          "last_reviewed": "2026-02-14",
+          "age_days": 97,
+          "status": "fresh"
+        },
+        {
+          "source": "incident-response",
+          "last_reviewed": "2026-02-14",
+          "age_days": 97,
+          "status": "fresh"
+        },
+        {
+          "source": "gdpr-privacy-program",
+          "last_reviewed": "2026-03-10",
+          "age_days": 73,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:incident-response",
+          "source_id": "incident-response",
+          "title": "Security Incident Response Plan",
+          "type": "plan",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "A.5.24",
+            "A.5.25",
+            "GDPR Art. 33"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-02-14",
+          "snippet": "Potential personal data breaches are assessed for regulatory and customer notification obligations, including GDPR timing requirements where applicable.",
+          "score": 13.169,
+          "matched_terms": [
+            "containment",
+            "gdpr",
+            "incident",
+            "notification",
+            "response",
+            "triage"
+          ]
+        },
+        {
+          "citation": "S2:incident-response",
+          "source_id": "incident-response",
+          "title": "Security Incident Response Plan",
+          "type": "plan",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "A.5.24",
+            "A.5.25",
+            "GDPR Art. 33"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-02-14",
+          "snippet": "Security incidents are triaged by severity, assigned an incident owner, and tracked through containment, eradication, recovery, and post-incident review.",
+          "score": 12.451,
+          "matched_terms": [
+            "containment",
+            "gdpr",
+            "incident",
+            "notification",
+            "response",
+            "triage"
+          ]
+        },
+        {
+          "citation": "S3:incident-response",
+          "source_id": "incident-response",
+          "title": "Security Incident Response Plan",
+          "type": "plan",
+          "frameworks": [
+            "ISO 27001",
+            "GDPR",
+            "DORA"
+          ],
+          "control_ids": [
+            "A.5.24",
+            "A.5.25",
+            "GDPR Art. 33"
+          ],
+          "owner": "Security",
+          "last_reviewed": "2026-02-14",
+          "snippet": "Incident exercises and tabletop reviews are used to test roles, escalation paths, communication templates, and evidence collection.",
+          "score": 12.269,
+          "matched_terms": [
+            "containment",
+            "gdpr",
+            "incident",
+            "notification",
+            "response",
+            "triage"
+          ]
+        },
+        {
+          "citation": "S4:gdpr-privacy-program",
+          "source_id": "gdpr-privacy-program",
+          "title": "GDPR Privacy and Data Protection Program",
+          "type": "policy",
+          "frameworks": [
+            "GDPR"
+          ],
+          "control_ids": [
+            "GDPR Art. 5",
+            "GDPR Art. 28",
+            "GDPR Art. 32"
+          ],
+          "owner": "Privacy",
+          "last_reviewed": "2026-03-10",
+          "snippet": "Technical and organizational measures include encryption, least-privilege access, audit logging, incident response, and retention controls.",
+          "score": 8.379,
+          "matched_terms": [
+            "gdpr",
+            "incident",
+            "privacy",
+            "response"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Have you completed penetration testing for the application and API?",
+      "answer": "Draft answer based on approved evidence: Jamie completed an external penetration test of the web application and API in 2025 by an independent security provider. [S1:pentest-2025] The test scope included authenticated application workflows, API authorization checks, common web vulnerabilities, and cloud-exposed attack surface. [S2:pentest-2025] No critical findings remained open after remediation and retesting; remediation evidence is tracked by Security Engineering. [S3:pentest-2025]",
+      "confidence": "medium",
+      "needs_human_review": false,
+      "confidence_rationale": "Relevant evidence was found, but coverage is narrower or includes stale evidence that should be checked before sending.",
+      "freshness": [
+        {
+          "source": "pentest-2025",
+          "last_reviewed": "2025-09-12",
+          "age_days": 252,
+          "status": "stale"
+        },
+        {
+          "source": "pentest-2025",
+          "last_reviewed": "2025-09-12",
+          "age_days": 252,
+          "status": "stale"
+        },
+        {
+          "source": "pentest-2025",
+          "last_reviewed": "2025-09-12",
+          "age_days": 252,
+          "status": "stale"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:pentest-2025",
+          "source_id": "pentest-2025",
+          "title": "External Penetration Test Executive Summary",
+          "type": "test-report",
+          "frameworks": [
+            "ISO 27001",
+            "SOC 2"
+          ],
+          "control_ids": [
+            "A.8.8",
+            "CC7.1"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2025-09-12",
+          "snippet": "Jamie completed an external penetration test of the web application and API in 2025 by an independent security provider.",
+          "score": 7.449,
+          "matched_terms": [
+            "api",
+            "application",
+            "completed",
+            "penetration"
+          ]
+        },
+        {
+          "citation": "S2:pentest-2025",
+          "source_id": "pentest-2025",
+          "title": "External Penetration Test Executive Summary",
+          "type": "test-report",
+          "frameworks": [
+            "ISO 27001",
+            "SOC 2"
+          ],
+          "control_ids": [
+            "A.8.8",
+            "CC7.1"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2025-09-12",
+          "snippet": "The test scope included authenticated application workflows, API authorization checks, common web vulnerabilities, and cloud-exposed attack surface.",
+          "score": 5.666,
+          "matched_terms": [
+            "api",
+            "application",
+            "penetration"
+          ]
+        },
+        {
+          "citation": "S3:pentest-2025",
+          "source_id": "pentest-2025",
+          "title": "External Penetration Test Executive Summary",
+          "type": "test-report",
+          "frameworks": [
+            "ISO 27001",
+            "SOC 2"
+          ],
+          "control_ids": [
+            "A.8.8",
+            "CC7.1"
+          ],
+          "owner": "Security Engineering",
+          "last_reviewed": "2025-09-12",
+          "snippet": "No critical findings remained open after remediation and retesting; remediation evidence is tracked by Security Engineering.",
+          "score": 4.936,
+          "matched_terms": [
+            "api",
+            "application",
+            "penetration"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Can you support DORA operational resilience requirements for financial institutions?",
+      "answer": "Draft answer based on approved evidence: Jamie maintains an ICT risk register covering availability, confidentiality, integrity, vendor dependency, and operational resilience risks. [S1:dora-operational-resilience] Operational resilience activities include backup checks, incident exercises, post-incident reviews, and continuity planning for critical customer workflows. [S2:dora-operational-resilience] Supplier risk records identify critical providers, security review status, data categories processed, and contingency considerations. [S3:dora-operational-resilience]",
+      "confidence": "high",
+      "needs_human_review": false,
+      "confidence_rationale": "Strong keyword coverage across fresh or current approved evidence.",
+      "freshness": [
+        {
+          "source": "dora-operational-resilience",
+          "last_reviewed": "2026-02-20",
+          "age_days": 91,
+          "status": "fresh"
+        },
+        {
+          "source": "dora-operational-resilience",
+          "last_reviewed": "2026-02-20",
+          "age_days": 91,
+          "status": "fresh"
+        },
+        {
+          "source": "dora-operational-resilience",
+          "last_reviewed": "2026-02-20",
+          "age_days": 91,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:dora-operational-resilience",
+          "source_id": "dora-operational-resilience",
+          "title": "DORA ICT Risk and Operational Resilience Mapping",
+          "type": "framework-mapping",
+          "frameworks": [
+            "DORA"
+          ],
+          "control_ids": [
+            "DORA ICT Risk",
+            "DORA Incident Reporting",
+            "DORA Third-Party Risk"
+          ],
+          "owner": "GRC",
+          "last_reviewed": "2026-02-20",
+          "snippet": "Jamie maintains an ICT risk register covering availability, confidentiality, integrity, vendor dependency, and operational resilience risks.",
+          "score": 12.893,
+          "matched_terms": [
+            "dora",
+            "ict",
+            "operational",
+            "resilience",
+            "risk",
+            "third-party"
+          ]
+        },
+        {
+          "citation": "S2:dora-operational-resilience",
+          "source_id": "dora-operational-resilience",
+          "title": "DORA ICT Risk and Operational Resilience Mapping",
+          "type": "framework-mapping",
+          "frameworks": [
+            "DORA"
+          ],
+          "control_ids": [
+            "DORA ICT Risk",
+            "DORA Incident Reporting",
+            "DORA Third-Party Risk"
+          ],
+          "owner": "GRC",
+          "last_reviewed": "2026-02-20",
+          "snippet": "Operational resilience activities include backup checks, incident exercises, post-incident reviews, and continuity planning for critical customer workflows.",
+          "score": 12.724,
+          "matched_terms": [
+            "dora",
+            "ict",
+            "operational",
+            "resilience",
+            "risk",
+            "third-party"
+          ]
+        },
+        {
+          "citation": "S3:dora-operational-resilience",
+          "source_id": "dora-operational-resilience",
+          "title": "DORA ICT Risk and Operational Resilience Mapping",
+          "type": "framework-mapping",
+          "frameworks": [
+            "DORA"
+          ],
+          "control_ids": [
+            "DORA ICT Risk",
+            "DORA Incident Reporting",
+            "DORA Third-Party Risk"
+          ],
+          "owner": "GRC",
+          "last_reviewed": "2026-02-20",
+          "snippet": "Supplier risk records identify critical providers, security review status, data categories processed, and contingency considerations.",
+          "score": 11.788,
+          "matched_terms": [
+            "dora",
+            "ict",
+            "operational",
+            "resilience",
+            "risk",
+            "third-party"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Are you FedRAMP authorized?",
+      "answer": "Needs human review. The evidence below may be relevant, but it is not strong enough for an unsupported claim. Jamie does not currently have approved evidence to claim FedRAMP authorization. [S1:unsupported-fedramp]",
+      "confidence": "low",
+      "needs_human_review": true,
+      "confidence_rationale": "Evidence is weak, outdated, or too narrow for a supported customer-facing answer.",
+      "freshness": [
+        {
+          "source": "unsupported-fedramp",
+          "last_reviewed": "2026-05-10",
+          "age_days": 12,
+          "status": "fresh"
+        }
+      ],
+      "citations": [
+        {
+          "citation": "S1:unsupported-fedramp",
+          "source_id": "unsupported-fedramp",
+          "title": "Unsupported Claims Register",
+          "type": "negative-evidence-register",
+          "frameworks": [
+            "Sales Enablement"
+          ],
+          "control_ids": [
+            "Unsupported Claims"
+          ],
+          "owner": "GRC",
+          "last_reviewed": "2026-05-10",
+          "snippet": "Jamie does not currently have approved evidence to claim FedRAMP authorization.",
+          "score": 2.455,
+          "matched_terms": [
+            "authorization",
+            "fedramp"
+          ]
+        }
+      ]
+    }
+  ]
+}

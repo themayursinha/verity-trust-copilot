@@ -1,0 +1,12 @@
+[
+  "Are you ISO 27001 certified or aligned, and how do you manage your ISMS?",
+  "Do you encrypt customer meeting data at rest and in transit?",
+  "Do you use our meeting transcripts or summaries to train AI models?",
+  "How long do you retain meeting transcripts and can customers request deletion?",
+  "Do you maintain a list of subprocessors and notify customers about changes?",
+  "How is employee access to production and customer data controlled?",
+  "What is your incident response process and do you support GDPR breach notification?",
+  "Have you completed penetration testing for the application and API?",
+  "Can you support DORA operational resilience requirements for financial institutions?",
+  "Are you FedRAMP authorized?"
+]

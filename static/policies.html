@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Policy Center — Security Questionnaire Copilot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <nav class="dash-nav">
+        <div class="dash-nav-left">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="dash-nav-title">Policy Center</span>
+        </div>
+        <div class="dash-nav-right">
+          <a href="/static/dashboard.html" class="ghost-button" style="text-decoration:none;display:inline-flex;align-items:center;">Dashboard</a>
+          <a href="/" class="ghost-button" style="text-decoration:none;display:inline-flex;align-items:center;">Questionnaire Copilot</a>
+        </div>
+      </nav>
+
+      <div class="policy-toolbar">
+        <h2 style="margin:0">Security Policies</h2>
+        <button id="btnNewPolicy" class="button-primary">+ New Policy</button>
+      </div>
+
+      <div id="policyList" class="policy-list">
+        <div class="dash-placeholder">Loading policies...</div>
+      </div>
+
+      <div id="policyModal" class="modal-overlay" style="display:none">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="modalTitle">New Policy</h3>
+            <button id="btnCloseModal" class="ghost-button" aria-label="Close">&times;</button>
+          </div>
+          <form id="policyForm">
+            <input type="hidden" id="policyId" value="">
+            <label>Title <input type="text" id="fieldTitle" required></label>
+            <label>Category
+              <select id="fieldCategory">
+                <option value="information-security">Information Security</option>
+                <option value="data-protection">Data Protection</option>
+                <option value="access-control">Access Control</option>
+                <option value="incident-response">Incident Response</option>
+                <option value="vendor-management">Vendor Management</option>
+                <option value="acceptable-use">Acceptable Use</option>
+                <option value="business-continuity">Business Continuity</option>
+              </select>
+            </label>
+            <label>Content <textarea id="fieldContent" rows="8" required></textarea></label>
+            <label>Review Interval (months) <input type="number" id="fieldReviewInterval" value="12" min="1" max="36"></label>
+            <div class="modal-actions">
+              <button type="button" id="btnCancelModal" class="ghost-button">Cancel</button>
+              <button type="submit" class="button-primary">Save Policy</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+    <script src="/static/policies.js"></script>
+  </body>
+</html>

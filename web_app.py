@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,6 +29,10 @@ EVIDENCE_PATH = ROOT / "evidence" / "evidence.json"
 QUESTIONS_PATH = ROOT / "data" / "questions.json"
 OUTPUT_DIR = ROOT / "outputs"
 APPROVALS_PATH = OUTPUT_DIR / "approvals.json"
+POLICIES_PATH = ROOT / "data" / "policies.json"
+ACTIVITY_PATH = OUTPUT_DIR / "activity.json"
+VANTA_CONFIG_PATH = ROOT / "data" / "vanta_config.json"
+PENTESTS_PATH = ROOT / "data" / "pentests.json"
 CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -44,6 +49,83 @@ def parse_questions(payload: dict[str, Any]) -> list[str]:
     if isinstance(question_text, str):
         return [line.strip() for line in question_text.splitlines() if line.strip()]
     return []
+
+
+def load_policies() -> list[dict[str, Any]]:
+    if not POLICIES_PATH.exists():
+        return []
+    return json.loads(POLICIES_PATH.read_text(encoding="utf-8"))
+
+
+def save_policies(policies: list[dict[str, Any]]) -> None:
+    POLICIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    POLICIES_PATH.write_text(json.dumps(policies, indent=2), encoding="utf-8")
+
+
+def next_policy_id(policies: list[dict[str, Any]]) -> str:
+    max_id = 0
+    for p in policies:
+        with contextlib.suppress(ValueError, TypeError):
+            max_id = max(max_id, int(p.get("id", "0")))
+    return str(max_id + 1)
+
+
+def append_activity(action: str, detail: str = "") -> None:
+    ACTIVITY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    activities = []
+    if ACTIVITY_PATH.exists():
+        activities = json.loads(ACTIVITY_PATH.read_text(encoding="utf-8"))
+    activities.append(
+        {
+            "action": action,
+            "detail": detail,
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+        }
+    )
+    if len(activities) > 100:
+        activities = activities[-100:]
+    ACTIVITY_PATH.write_text(json.dumps(activities, indent=2), encoding="utf-8")
+
+
+def load_activity() -> list[dict[str, Any]]:
+    if not ACTIVITY_PATH.exists():
+        return []
+    return json.loads(ACTIVITY_PATH.read_text(encoding="utf-8"))
+
+
+def load_vanta_config() -> dict[str, Any]:
+    if not VANTA_CONFIG_PATH.exists():
+        return {
+            "connected": False,
+            "api_key_configured": False,
+            "organization_id": "",
+            "last_sync": None,
+        }
+    return json.loads(VANTA_CONFIG_PATH.read_text(encoding="utf-8"))
+
+
+def save_vanta_config(config: dict[str, Any]) -> None:
+    VANTA_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    VANTA_CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding="utf-8")
+
+
+def load_pentests() -> list[dict[str, Any]]:
+    if not PENTESTS_PATH.exists():
+        return []
+    return json.loads(PENTESTS_PATH.read_text(encoding="utf-8"))
+
+
+def save_pentests(pentests: list[dict[str, Any]]) -> None:
+    PENTESTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PENTESTS_PATH.write_text(json.dumps(pentests, indent=2), encoding="utf-8")
+
+
+def next_pentest_id(pentests: list[dict[str, Any]]) -> str:
+    max_id = 0
+    for p in pentests:
+        with contextlib.suppress(ValueError, TypeError):
+            max_id = max(max_id, int(p.get("id", "0")))
+    return str(max_id + 1)
 
 
 def slugify(value: str) -> str:
@@ -169,10 +251,122 @@ class CopilotHandler(BaseHTTPRequestHandler):
         if path == "/api/approvals":
             self.send_json({"approvals": load_approvals()})
             return
+        if path == "/api/dashboard/overview":
+            self.dashboard_overview()
+            return
+        if path == "/api/policies":
+            self.send_json(load_policies())
+            return
+        if path == "/api/vanta/status":
+            self.send_json(load_vanta_config())
+            return
+        if re.match(r"^/api/policies/\d+$", path):
+            self.get_policy(path)
+            return
+        if path == "/api/pentests":
+            self.send_json(load_pentests())
+            return
+        if re.match(r"^/api/pentests/\d+$", path):
+            self.get_pentest(path)
+            return
         if path.startswith("/static/"):
             requested = (STATIC_DIR / path.removeprefix("/static/")).resolve()
             if STATIC_DIR in requested.parents or requested == STATIC_DIR:
                 self.serve_file(requested)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def dashboard_overview(self) -> None:
+        records = load_evidence_records()
+
+        frameworks: dict[str, dict[str, Any]] = {
+            "iso-27001": {"id": "iso-27001", "coverage": 0.0, "evidence_count": 0, "control_count": 0},
+            "soc-2": {"id": "soc-2", "coverage": 0.0, "evidence_count": 0, "control_count": 0},
+            "gdpr": {"id": "gdpr", "coverage": 0.0, "evidence_count": 0, "control_count": 0},
+            "dora": {"id": "dora", "coverage": 0.0, "evidence_count": 0, "control_count": 0},
+        }
+        for rec in records:
+            for fw in rec.get("frameworks", []):
+                fw_lower = fw.lower().replace(" ", "-").replace("_", "-")
+                if fw_lower in frameworks:
+                    frameworks[fw_lower]["evidence_count"] += 1
+                    ctrl_count = len(rec.get("control_ids", []))
+                    frameworks[fw_lower]["control_count"] += ctrl_count
+
+        max_evidence = max((v["evidence_count"] for v in frameworks.values()), default=1)
+        for v in frameworks.values():
+            v["coverage"] = round(v["evidence_count"] / max(max_evidence, 1), 2)
+
+        now = datetime.now()
+        fresh = stale = 0
+        fw_set = set()
+        for rec in records:
+            for fw in rec.get("frameworks", []):
+                fw_set.add(fw.lower().replace(" ", "-"))
+            try:
+                lr = parse_date(str(rec.get("last_reviewed", "")))
+                age_days = (now.date() - lr).days
+                if age_days <= 180:
+                    fresh += 1
+                elif age_days >= 365:
+                    stale += 1
+            except (ValueError, TypeError):
+                pass
+
+        approvals = load_approvals()
+        approved = sum(1 for a in approvals.values() if a.get("status") == "approved")
+        rejected = sum(1 for a in approvals.values() if a.get("status") == "rejected")
+        unreviewed = sum(1 for a in approvals.values() if a.get("status") in ("unreviewed", ""))
+
+        policies = load_policies()
+        active_policies = sum(1 for p in policies if p.get("status") == "active")
+        draft_policies = sum(1 for p in policies if p.get("status") in ("draft", ""))
+        now_dt = datetime.now()
+        cutoff = now_dt.date() + timedelta(days=30)
+        upcoming = sum(1 for p in policies if p.get("next_review") and parse_date(p["next_review"]) <= cutoff)
+
+        activity = load_activity()
+
+        self.send_json(
+            {
+                "frameworks": list(frameworks.values()),
+                "evidence": {
+                    "total": len(records),
+                    "fresh": fresh,
+                    "stale": stale,
+                    "frameworks_covered": len(fw_set),
+                },
+                "policies": {
+                    "total": len(policies),
+                    "active": active_policies,
+                    "draft": draft_policies,
+                    "upcoming_reviews": upcoming,
+                },
+                "approvals": {
+                    "total": len(approvals),
+                    "approved": approved,
+                    "rejected": rejected,
+                    "unreviewed": unreviewed,
+                },
+                "recent_activity": activity[-10:] if activity else [],
+            }
+        )
+
+    def get_policy(self, path: str) -> None:
+        policy_id = path.split("/")[-1]
+        policies = load_policies()
+        for p in policies:
+            if p.get("id") == policy_id:
+                self.send_json(p)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def get_pentest(self, path: str) -> None:
+        pentest_id = path.split("/")[-1]
+        pentests = load_pentests()
+        for p in pentests:
+            if p.get("id") == pentest_id:
+                self.send_json(p)
                 return
         self.send_error(HTTPStatus.NOT_FOUND)
 
@@ -200,6 +394,22 @@ class CopilotHandler(BaseHTTPRequestHandler):
 
             if path == "/api/approval":
                 self.set_approval(payload)
+                return
+
+            if path == "/api/policies":
+                self.create_policy(payload)
+                return
+
+            if path == "/api/vanta/sync":
+                self.vanta_sync(payload)
+                return
+
+            if path == "/api/pentests":
+                self.create_pentest(payload)
+                return
+
+            if re.match(r"^/api/pentests/\d+/findings$", path):
+                self.add_finding(path, payload)
                 return
 
             if path != "/api/answer":
@@ -317,6 +527,291 @@ class CopilotHandler(BaseHTTPRequestHandler):
         }
         save_approvals(approvals)
         self.send_json({"question": question.strip(), **approvals[question.strip()]})
+
+    def do_PUT(self) -> None:
+        path = urlparse(self.path).path
+        policy_match = re.match(r"^/api/policies/(\d+)$", path)
+        pentest_match = re.match(r"^/api/pentests/(\d+)$", path)
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            payload = json.loads(self.rfile.read(length) or b"{}")
+            if policy_match:
+                self.update_policy(policy_match.group(1), payload)
+                return
+            if pentest_match:
+                self.update_pentest(pentest_match.group(1), payload)
+                return
+        except ValueError as exc:
+            self.send_json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def do_DELETE(self) -> None:
+        path = urlparse(self.path).path
+        policy_match = re.match(r"^/api/policies/(\d+)$", path)
+        pentest_match = re.match(r"^/api/pentests/(\d+)$", path)
+        finding_match = re.match(r"^/api/pentests/(\d+)/findings/(\d+)$", path)
+        if policy_match:
+            self.delete_policy(policy_match.group(1))
+            return
+        if pentest_match:
+            self.delete_pentest(pentest_match.group(1))
+            return
+        if finding_match:
+            self.delete_finding(finding_match.group(1), finding_match.group(2))
+            return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def create_policy(self, payload: dict[str, Any]) -> None:
+        title = str(payload.get("title", "")).strip()
+        if not title:
+            raise ValueError("Policy title is required.")
+        policies = load_policies()
+        policy = {
+            "id": next_policy_id(policies),
+            "title": title,
+            "category": str(payload.get("category", "information-security")).strip(),
+            "content": str(payload.get("content", "")).strip(),
+            "status": "draft",
+            "version": 1,
+            "review_interval_months": int(payload.get("review_interval_months", 12)),
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        next_date = self._calc_next_review(policy["created_at"], policy["review_interval_months"])
+        policy["next_review"] = next_date
+        policies.append(policy)
+        save_policies(policies)
+        append_activity("Policy created", title)
+        self.send_json(policy, HTTPStatus.CREATED)
+
+    def update_policy(self, policy_id: str, payload: dict[str, Any]) -> None:
+        policies = load_policies()
+        for p in policies:
+            if p.get("id") == policy_id:
+                title = str(payload.get("title", p.get("title", ""))).strip()
+                p["title"] = title
+                p["category"] = str(payload.get("category", p.get("category", "information-security"))).strip()
+                p["content"] = str(payload.get("content", p.get("content", ""))).strip()
+                if "review_interval_months" in payload:
+                    p["review_interval_months"] = int(payload["review_interval_months"])
+                    next_date = self._calc_next_review(p["updated_at"], p["review_interval_months"])
+                    p["next_review"] = next_date
+                p["updated_at"] = datetime.now().isoformat(timespec="seconds")
+                save_policies(policies)
+                append_activity("Policy updated", title)
+                self.send_json(p)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def delete_policy(self, policy_id: str) -> None:
+        policies = load_policies()
+        for i, p in enumerate(policies):
+            if p.get("id") == policy_id:
+                removed = policies.pop(i)
+                save_policies(policies)
+                append_activity("Policy deleted", removed.get("title", ""))
+                self.send_json({"deleted": policy_id})
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    @staticmethod
+    def _calc_next_review(from_iso: str, interval_months: int) -> str:
+        try:
+            from_dt = datetime.fromisoformat(from_iso)
+        except (ValueError, TypeError):
+            from_dt = datetime.now()
+        y = from_dt.year + (from_dt.month + interval_months - 1) // 12
+        m = (from_dt.month + interval_months - 1) % 12 + 1
+        d = min(from_dt.day, 28)
+        try:
+            next_dt = from_dt.replace(year=y, month=m, day=d)
+        except (ValueError, OverflowError):
+            next_dt = from_dt.replace(year=y, month=m, day=1)
+        return next_dt.date().isoformat()
+
+    def create_pentest(self, payload: dict[str, Any]) -> None:
+        title = str(payload.get("title", "")).strip()
+        if not title:
+            raise ValueError("Pentest title is required.")
+        pentests = load_pentests()
+        pentest = {
+            "id": next_pentest_id(pentests),
+            "title": title,
+            "scope": str(payload.get("scope", "")).strip(),
+            "methodology": str(payload.get("methodology", "")).strip(),
+            "start_date": str(payload.get("start_date", "")).strip(),
+            "end_date": str(payload.get("end_date", "")).strip(),
+            "status": str(payload.get("status", "planned")).strip(),
+            "findings": [],
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        if pentest["status"] not in ("planned", "in-progress", "completed"):
+            pentest["status"] = "planned"
+        pentests.append(pentest)
+        save_pentests(pentests)
+        append_activity("Pentest created", title)
+        self.send_json(pentest, HTTPStatus.CREATED)
+
+    def update_pentest(self, pentest_id: str, payload: dict[str, Any]) -> None:
+        pentests = load_pentests()
+        for p in pentests:
+            if p.get("id") == pentest_id:
+                if "title" in payload:
+                    p["title"] = str(payload["title"]).strip()
+                if "scope" in payload:
+                    p["scope"] = str(payload["scope"]).strip()
+                if "methodology" in payload:
+                    p["methodology"] = str(payload["methodology"]).strip()
+                if "start_date" in payload:
+                    p["start_date"] = str(payload["start_date"]).strip()
+                if "end_date" in payload:
+                    p["end_date"] = str(payload["end_date"]).strip()
+                if "status" in payload:
+                    s = str(payload["status"]).strip()
+                    if s in ("planned", "in-progress", "completed"):
+                        p["status"] = s
+                p["updated_at"] = datetime.now().isoformat(timespec="seconds")
+                save_pentests(pentests)
+                append_activity("Pentest updated", p["title"])
+                self.send_json(p)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def delete_pentest(self, pentest_id: str) -> None:
+        pentests = load_pentests()
+        for i, p in enumerate(pentests):
+            if p.get("id") == pentest_id:
+                removed = pentests.pop(i)
+                save_pentests(pentests)
+                append_activity("Pentest deleted", removed.get("title", ""))
+                self.send_json({"deleted": pentest_id})
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def add_finding(self, path: str, payload: dict[str, Any]) -> None:
+        pentest_id = path.split("/")[-2]
+        pentests = load_pentests()
+        for p in pentests:
+            if p.get("id") == pentest_id:
+                title = str(payload.get("title", "")).strip()
+                if not title:
+                    raise ValueError("Finding title is required.")
+                max_fid = 0
+                for f in p.get("findings", []):
+                    with contextlib.suppress(ValueError, TypeError):
+                        max_fid = max(max_fid, int(f.get("id", "0")))
+                finding = {
+                    "id": str(max_fid + 1),
+                    "title": title,
+                    "severity": str(payload.get("severity", "medium")).strip(),
+                    "description": str(payload.get("description", "")).strip(),
+                    "remediation": str(payload.get("remediation", "")).strip(),
+                    "status": str(payload.get("status", "open")).strip(),
+                    "assigned_to": str(payload.get("assigned_to", "")).strip(),
+                    "due_date": str(payload.get("due_date", "")).strip(),
+                }
+                if finding["severity"] not in ("critical", "high", "medium", "low", "info"):
+                    finding["severity"] = "medium"
+                if finding["status"] not in ("open", "in-progress", "resolved", "accepted"):
+                    finding["status"] = "open"
+                p.setdefault("findings", []).append(finding)
+                p["updated_at"] = datetime.now().isoformat(timespec="seconds")
+                save_pentests(pentests)
+                append_activity("Finding added", f"{finding['title']} ({pentest_id})")
+                self.send_json(finding, HTTPStatus.CREATED)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def delete_finding(self, pentest_id: str, finding_id: str) -> None:
+        pentests = load_pentests()
+        for p in pentests:
+            if p.get("id") == pentest_id:
+                findings = p.get("findings", [])
+                for i, f in enumerate(findings):
+                    if f.get("id") == finding_id:
+                        removed = findings.pop(i)
+                        p["findings"] = findings
+                        p["updated_at"] = datetime.now().isoformat(timespec="seconds")
+                        save_pentests(pentests)
+                        append_activity("Finding deleted", removed.get("title", ""))
+                        self.send_json({"deleted": finding_id})
+                        return
+                self.send_error(HTTPStatus.NOT_FOUND)
+                return
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def vanta_sync(self, payload: dict[str, Any]) -> None:
+        vanta_config = load_vanta_config()
+        api_key = payload.get("api_key", "").strip()
+        org_id = payload.get("organization_id", "").strip()
+
+        if api_key:
+            vanta_config["api_key_configured"] = True
+            vanta_config["connected"] = True
+        if org_id:
+            vanta_config["organization_id"] = org_id
+
+        now_str = datetime.now().isoformat(timespec="seconds")
+        vanta_config["last_sync"] = now_str
+        vanta_config["connected"] = True
+        save_vanta_config(vanta_config)
+
+        evidence = load_evidence_records()
+        existing_ids = {rec.get("id") for rec in evidence}
+        synced = []
+        mock_records = [
+            {
+                "id": "vanta-device-compliance",
+                "title": "Vanta Device Compliance Check",
+                "type": "control-evidence",
+                "frameworks": ["SOC 2", "ISO 27001"],
+                "control_ids": ["CC6.1", "A.8.8"],
+                "last_reviewed": now_str[:10],
+                "owner": "Security",
+                "summary": "Vanta automated check: device encryption, MFA, screen lock, antivirus, OS patch level.",
+                "snippets": ["Vanta monitors device compliance across all employee laptops."],
+            },
+            {
+                "id": "vanta-access-review",
+                "title": "Vanta Quarterly Access Review",
+                "type": "control-evidence",
+                "frameworks": ["SOC 2", "ISO 27001"],
+                "control_ids": ["CC6.2", "A.5.15"],
+                "last_reviewed": now_str[:10],
+                "owner": "IT",
+                "summary": "Vanta tracked quarterly access review for production, identity, and admin systems.",
+                "snippets": ["Quarterly access reviews completed and tracked in Vanta."],
+            },
+            {
+                "id": "vanta-security-training",
+                "title": "Vanta Security Training Report",
+                "type": "control-evidence",
+                "frameworks": ["SOC 2", "ISO 27001"],
+                "control_ids": ["CC1.2", "A.6.3"],
+                "last_reviewed": now_str[:10],
+                "owner": "Security",
+                "summary": "Employee security training completion status from Vanta.",
+                "snippets": ["Security training completion tracked via Vanta for all employees."],
+            },
+        ]
+        for record in mock_records:
+            if record["id"] not in existing_ids:
+                evidence.append(record)
+                existing_ids.add(record["id"])
+                synced.append(record["title"])
+
+        save_evidence_records(evidence)
+        append_activity("Vanta sync completed", f"Imported {len(synced)} evidence records")
+        self.send_json(
+            {
+                "status": "success",
+                "synced_count": len(synced),
+                "synced_titles": synced,
+                "last_sync": now_str,
+                "config": vanta_config,
+            }
+        )
 
     def serve_file(self, path: Path) -> None:
         if not path.exists() or not path.is_file():

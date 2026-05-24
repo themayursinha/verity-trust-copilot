@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compliance Dashboard — Security Questionnaire Copilot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <nav class="dash-nav">
+        <div class="dash-nav-left">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="dash-nav-title">Compliance Dashboard</span>
+        </div>
+        <div class="dash-nav-right">
+          <a href="/static/pentests.html" class="ghost-button" style="text-decoration:none;display:inline-flex;align-items:center;">Pentests</a>
+          <a href="/" class="ghost-button" style="text-decoration:none;display:inline-flex;align-items:center;">Questionnaire Copilot</a>
+        </div>
+      </nav>
+
+      <div class="dash-grid">
+        <section class="dash-card" aria-label="Framework coverage">
+          <h3>Framework Coverage</h3>
+          <div id="frameworkCoverage" class="dash-frameworks">
+            <div class="dash-placeholder">Loading framework data...</div>
+          </div>
+        </section>
+
+        <section class="dash-card" aria-label="Evidence library">
+          <h3>Evidence Library</h3>
+          <div id="dashEvidence" class="dash-evidence">
+            <div class="dash-placeholder">Loading evidence...</div>
+          </div>
+        </section>
+
+        <section class="dash-card" aria-label="Policies">
+          <h3>Policies</h3>
+          <div id="dashPolicies" class="dash-policies">
+            <div class="dash-placeholder">Loading policies...</div>
+          </div>
+        </section>
+
+        <section class="dash-card" aria-label="Vanta integration">
+          <h3>Vanta Integration</h3>
+          <div id="dashVanta" class="dash-vanta">
+            <div class="dash-placeholder">Loading status...</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="dash-grid dash-grid-full">
+        <section class="dash-card" aria-label="Approvals">
+          <h3>Approvals</h3>
+          <div id="dashApprovals" class="dash-approvals">
+            <div class="dash-placeholder">Loading approvals...</div>
+          </div>
+        </section>
+
+        <section class="dash-card" aria-label="Recent activity">
+          <h3>Recent Activity</h3>
+          <div id="dashActivity" class="dash-activity">
+            <div class="dash-placeholder">Loading activity...</div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

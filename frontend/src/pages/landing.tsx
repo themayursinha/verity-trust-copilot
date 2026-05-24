@@ -123,6 +123,35 @@ export function LandingPage() {
           </div>
         </section>
 
+        <section className="py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                See Verity in Action
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Explore the core features that help security teams answer
+                questionnaires faster with verifiable, citation-backed results.
+              </p>
+            </div>
+            <div className="mt-16 grid gap-6 sm:grid-cols-2">
+              {[
+                { label: "Answer Generator", gradient: "from-emerald-500 to-teal-600" },
+                { label: "Compliance Dashboard", gradient: "from-teal-500 to-cyan-600" },
+                { label: "Evidence Library", gradient: "from-cyan-500 to-blue-600" },
+                { label: "Policy Center", gradient: "from-blue-500 to-indigo-600" },
+              ].map(({ label, gradient }) => (
+                <div key={label} className="space-y-2">
+                  <div className={`aspect-video rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
+                    <span className="text-white/70 text-sm font-medium">Screenshot placeholder</span>
+                  </div>
+                  <p className="text-center text-sm text-muted-foreground font-medium">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="border-t bg-muted/30 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">

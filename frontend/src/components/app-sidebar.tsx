@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -26,12 +27,29 @@ const navItems = [
 export function AppSidebar() {
   const { user, organization, logout } = useAuth();
 
+  useEffect(() => {
+    if (organization?.brand_color) {
+      document.documentElement.style.setProperty("--brand", organization.brand_color);
+    }
+  }, [organization?.brand_color]);
+
   return (
-    <aside className="flex h-screen w-[260px] flex-col bg-sidebar text-sidebar-foreground">
+    <aside
+      className="flex h-screen w-[260px] flex-col bg-sidebar text-sidebar-foreground"
+      style={
+        organization?.brand_color
+          ? ({ "--sidebar": organization.brand_color, "--sidebar-foreground": "#ffffff" } as React.CSSProperties)
+          : undefined
+      }
+    >
       <div className="flex items-center gap-3 px-6 py-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <Shield className="h-5 w-5 text-primary-foreground" />
-        </div>
+        {organization?.logo_url ? (
+          <img src={organization.logo_url} alt={organization.name} className="h-10 w-10 rounded-lg object-cover" />
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <Shield className="h-5 w-5 text-primary-foreground" />
+          </div>
+        )}
         <div>
           <h1 className="text-lg font-bold tracking-tight">Verity</h1>
           <p className="text-xs text-sidebar-foreground/60">Trust Copilot</p>

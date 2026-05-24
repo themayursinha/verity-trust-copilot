@@ -21,9 +21,17 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-4o-mini"
     LLM_MAX_TOKENS: int = 600
 
+    VANTA_API_KEY: str = ""
+    VANTA_API_BASE: str = "https://api.vanta.com"
+    VANTA_INTEGRATION_MODE: str = "mock"
+
     @property
     def llm_configured(self) -> bool:
         return bool(self.LLM_API_KEY)
+
+    @property
+    def vanta_configured(self) -> bool:
+        return bool(self.VANTA_API_KEY) and self.VANTA_INTEGRATION_MODE == "live"
 
     class Config:
         env_file = ".env"

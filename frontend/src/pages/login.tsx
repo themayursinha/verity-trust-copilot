@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import type { Organization } from "@/types";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -24,9 +25,19 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+function getStoredOrg(): Organization | null {
+  try {
+    const raw = localStorage.getItem("organization");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const storedOrg = getStoredOrg();
   const {
     register,
     handleSubmit,
@@ -53,7 +64,11 @@ export function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <Shield className="h-7 w-7 text-primary-foreground" />
+            {storedOrg?.logo_url ? (
+              <img src={storedOrg.logo_url} alt={storedOrg.name} className="h-14 w-14 rounded-xl object-cover" />
+            ) : (
+              <Shield className="h-7 w-7 text-primary-foreground" />
+            )}
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>Sign in to Verity Trust Copilot</CardDescription>

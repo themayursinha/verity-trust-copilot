@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Copy, Check, Moon, Sun, UserPlus, Trash2 } from "lucide-react";
+import { Copy, Check, Moon, Sun, UserPlus, Trash2, Paintbrush } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { getOrgMembers, inviteMember, updateMember, removeMember, getOrgInfo, getLicenseStatus, activateLicense } from "@/lib/api";
+import { getOrgMembers, inviteMember, updateMember, removeMember, getOrgInfo, getLicenseStatus, activateLicense, updateBranding } from "@/lib/api";
 
 function SettingsPage() {
-  const { user, organization } = useAuth();
+  const { user, organization, updateOrganization } = useAuth();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [isDark, setIsDark] = useState(
@@ -39,6 +39,8 @@ function SettingsPage() {
   const [inviteRole, setInviteRole] = useState("member");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [licenseKeyInput, setLicenseKeyInput] = useState("");
+  const [brandColor, setBrandColor] = useState("#0f766e");
+  const [logoUrl, setLogoUrl] = useState("");
 
   const { data: orgInfo } = useQuery({
     queryKey: ["orgInfo"],
@@ -54,6 +56,13 @@ function SettingsPage() {
     queryKey: ["licenseStatus"],
     queryFn: getLicenseStatus,
   });
+
+  useEffect(() => {
+    if (organization) {
+      setBrandColor(organization.brand_color || "#0f766e");
+      setLogoUrl(organization.logo_url || "");
+    }
+  }, [organization]);
 
   const activateMutation = useMutation({
     mutationFn: (key: string) => activateLicense(key),
@@ -92,6 +101,21 @@ function SettingsPage() {
     },
   });
 
+  const brandingMutation = useMutation({
+    mutationFn: (data: { brand_color?: string; logo_url?: string }) =>
+      updateBranding(data),
+    onSuccess: (result) => {
+      if (organization) {
+        updateOrganization({
+          ...organization,
+          brand_color: result.brand_color,
+          logo_url: result.logo_url,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["orgInfo"] });
+    },
+  });
+
   const toggleDarkMode = () => {
     const newDark = !isDark;
     setIsDark(newDark);
@@ -110,6 +134,10 @@ function SettingsPage() {
   const handleInvite = () => {
     if (!inviteEmail) return;
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
+  };
+
+  const handleSaveBranding = () => {
+    brandingMutation.mutate({ brand_color: brandColor, logo_url: logoUrl || undefined });
   };
 
   const handleRoleChange = (userId: string, role: string) => {
@@ -164,6 +192,75 @@ function SettingsPage() {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Branding</CardTitle>
+          <CardDescription>Customize your organization&apos;s logo and brand color</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="brand-color">Brand Color</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="brand-color"
+                  type="color"
+                  value={brandColor}
+                  onChange={(e) => setBrandColor(e.target.value)}
+                  className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent"
+                />
+                <Input
+                  value={brandColor}
+                  onChange={(e) => setBrandColor(e.target.value)}
+                  placeholder="#0f766e"
+                  className="font-mono text-xs"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logo-url">Logo URL</Label>
+              <Input
+                id="logo-url"
+                type="url"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://example.com/logo.png"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="space-y-1">
+              <Label>Preview</Label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo preview" className="h-10 w-10 rounded-lg object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-white">V</span>
+                  )}
+                </div>
+                <div className="flex h-5 w-32 rounded" style={{ backgroundColor: brandColor }}>
+                  <span className="m-auto text-[10px] font-medium text-white">sidebar preview</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Separator />
+          <Button onClick={handleSaveBranding} disabled={brandingMutation.isPending}>
+            <Paintbrush className="mr-2 h-4 w-4" />
+            {brandingMutation.isPending ? "Saving..." : "Save Branding"}
+          </Button>
+          {brandingMutation.isError && (
+            <p className="text-sm text-destructive">
+              {(brandingMutation.error as Error)?.message || "Failed to save branding"}
+            </p>
+          )}
         </CardContent>
       </Card>
 

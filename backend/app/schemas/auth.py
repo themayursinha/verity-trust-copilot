@@ -31,6 +31,8 @@ class OrganizationResponse(BaseModel):
     id: str
     name: str
     slug: str
+    brand_color: str = "#0f766e"
+    logo_url: str | None = None
     max_seats: int
     license_key: str | None
     created_at: datetime

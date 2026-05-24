@@ -14,6 +14,8 @@ class Organization(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False)
     slug = Column(String(255), unique=True, nullable=False)
+    brand_color = Column(String(7), default="#0f766e")
+    logo_url = Column(String(500), nullable=True)
     license_key = Column(Text, nullable=True)
     max_seats = Column(Integer, default=5)
     created_at = Column(DateTime, default=func.now())

@@ -2,6 +2,8 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  brand_color: string;
+  logo_url: string | null;
   max_seats: number;
   license_key: string | null;
   created_at: string;

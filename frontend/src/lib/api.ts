@@ -148,6 +148,8 @@ export async function getOrgInfo(): Promise<{
   id: string;
   name: string;
   slug: string;
+  brand_color: string;
+  logo_url: string | null;
   max_seats: number;
   seats_used: number;
   license_key: string | null;
@@ -295,6 +297,14 @@ export async function activateLicense(licenseKey: string): Promise<{
   org_name?: string;
 }> {
   const response = await api.post("/api/v1/org/license/activate", { license_key: licenseKey });
+  return response.data;
+}
+
+export async function updateBranding(data: {
+  brand_color?: string;
+  logo_url?: string;
+}): Promise<{ brand_color: string; logo_url: string | null }> {
+  const response = await api.put("/api/v1/org/branding", data);
   return response.data;
 }
 

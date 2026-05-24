@@ -101,6 +101,41 @@ class LicenseActivateRequest(BaseModel):
     license_key: str
 
 
+class BrandingUpdate(BaseModel):
+    brand_color: str | None = None
+    logo_url: str | None = None
+
+
+@router.put("/branding")
+async def update_branding(
+    body: BrandingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    result = await db.execute(
+        select(Organization).where(Organization.id == current_user.org_id)
+    )
+    org = result.scalar_one()
+
+    if body.brand_color is not None:
+        if not body.brand_color.startswith("#") or len(body.brand_color) not in (4, 7):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="brand_color must be a hex color like #0f766e"
+            )
+        org.brand_color = body.brand_color
+
+    if body.logo_url is not None:
+        org.logo_url = body.logo_url if body.logo_url else None
+
+    await db.commit()
+
+    return {
+        "brand_color": org.brand_color,
+        "logo_url": org.logo_url,
+    }
+
+
 @router.get("/license")
 async def license_status(
     db: AsyncSession = Depends(get_db),
@@ -176,6 +211,8 @@ async def org_info(
         "id": org.id,
         "name": org.name,
         "slug": org.slug,
+        "brand_color": org.brand_color,
+        "logo_url": org.logo_url,
         "max_seats": org.max_seats,
         "seats_used": active_count,
         "license_key": org.license_key,

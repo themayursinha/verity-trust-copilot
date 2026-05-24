@@ -18,6 +18,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
+  updateOrganization: (org: Organization) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -107,9 +108,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate("/login");
   }, [navigate]);
 
+  const updateOrganization = useCallback(
+    (org: Organization) => {
+      setOrganization(org);
+      localStorage.setItem("organization", JSON.stringify(org));
+    },
+    []
+  );
+
   return (
     <AuthContext.Provider
-      value={{ user, organization, isLoading, login, register, logout, refreshAuth }}
+      value={{ user, organization, isLoading, login, register, logout, refreshAuth, updateOrganization }}
     >
       {children}
     </AuthContext.Provider>

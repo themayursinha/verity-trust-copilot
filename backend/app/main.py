@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 
 from app.config import settings
 from app.database import Base, engine
-from app.routers import auth, health, org
+from app.routers import answers, approvals, auth, dashboard, evidence, export, health, org, pentests, policies, vanta
 
 
 @asynccontextmanager
@@ -44,3 +44,11 @@ app.state.limiter = None
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(org.router)
+app.include_router(answers.router)
+app.include_router(approvals.router)
+app.include_router(export.router)
+app.include_router(evidence.router)
+app.include_router(dashboard.router)
+app.include_router(policies.router)
+app.include_router(pentests.router)
+app.include_router(vanta.router)

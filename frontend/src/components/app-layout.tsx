@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Toaster } from "@/components/ui/toast";
 
 const breadcrumbMap: Record<string, string> = {
   "/app/dashboard": "Dashboard",
@@ -28,6 +29,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <Toaster />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   FileText,
   Sparkles,
@@ -27,9 +28,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus } from "@/lib/api";
+import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus, getAnswerGenerations } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Answer } from "@/types";
+import type { Answer, AnswerGeneration } from "@/types";
 
 function confidenceColor(confidence: "high" | "medium" | "low" | null) {
   switch (confidence) {
@@ -50,15 +51,25 @@ export function AnswersPage() {
   const [questions, setQuestions] = useState("");
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAnswers, setGeneratedAnswers] = useState<Answer[]>([]);
+  const [localAnswers, setLocalAnswers] = useState<Answer[]>([]);
   const [loadingSample, setLoadingSample] = useState(false);
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmConfigured, setLlmConfigured] = useState(false);
   const [llmError, setLlmError] = useState<string | null>(null);
 
+  const { data: generations, isLoading: loadingGenerations } = useQuery({
+    queryKey: ["answer-generations"],
+    queryFn: getAnswerGenerations,
+  });
+
   useEffect(() => {
     getLLMStatus().then((s) => setLlmConfigured(s.configured)).catch(() => {});
   }, []);
+
+  const allAnswers: Answer[] = [
+    ...localAnswers,
+    ...(generations?.flatMap((g: AnswerGeneration) => g.answers) ?? []),
+  ];
 
   const handleLLMSuggest = async () => {
     if (!selectedAnswer) return;
@@ -79,7 +90,7 @@ export function AnswersPage() {
         created_at: new Date().toISOString(),
         __llm: true as const,
       };
-      setGeneratedAnswers((prev) => [llmAnswer as any, ...prev]);
+      setLocalAnswers((prev) => [llmAnswer as any, ...prev]);
       setSelectedAnswer(llmAnswer as any);
     } catch (e: any) {
       setLlmError(e?.response?.data?.detail || "LLM suggestion failed");
@@ -98,7 +109,8 @@ export function AnswersPage() {
     setIsGenerating(true);
     try {
       const result = await generateAnswers(qs);
-      setGeneratedAnswers((prev) => [...result.answers, ...prev]);
+      setLocalAnswers((prev) => [...result.answers, ...prev]);
+      setQuestions("");
     } catch {
       // handled by api interceptor
     } finally {
@@ -122,7 +134,7 @@ export function AnswersPage() {
     try {
       await setApproval(answer.question, "approved");
       setSelectedAnswer(null);
-      setGeneratedAnswers((prev) =>
+      setLocalAnswers((prev) =>
         prev.filter((a) => a.id !== answer.id)
       );
     } catch {
@@ -134,7 +146,7 @@ export function AnswersPage() {
     try {
       await setApproval(answer.question, "rejected");
       setSelectedAnswer(null);
-      setGeneratedAnswers((prev) =>
+      setLocalAnswers((prev) =>
         prev.filter((a) => a.id !== answer.id)
       );
     } catch {
@@ -204,7 +216,14 @@ export function AnswersPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-3">
-          {generatedAnswers.length === 0 ? (
+          {loadingGenerations ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="mt-4 text-sm text-muted-foreground">Loading answers...</p>
+              </CardContent>
+            </Card>
+          ) : allAnswers.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="h-12 w-12 text-muted-foreground/50" />
@@ -214,7 +233,7 @@ export function AnswersPage() {
               </CardContent>
             </Card>
           ) : (
-            generatedAnswers.map((answer) => (
+            allAnswers.map((answer) => (
               <Card
                 key={answer.id}
                 className={`cursor-pointer transition-colors hover:border-primary/50 ${

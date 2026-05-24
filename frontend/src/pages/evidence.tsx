@@ -61,6 +61,10 @@ export function EvidencePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [type, setType] = useState("");
+  const [lastReviewed, setLastReviewed] = useState(new Date().toISOString().split("T")[0]);
+  const [owner, setOwner] = useState("");
+  const [summary, setSummary] = useState("");
+  const [snippets, setSnippets] = useState("");
   const queryClient = useQueryClient();
 
   const { data: evidence, isLoading } = useQuery({
@@ -75,6 +79,10 @@ export function EvidencePage() {
       setIsDialogOpen(false);
       setTitle("");
       setType("");
+      setLastReviewed(new Date().toISOString().split("T")[0]);
+      setOwner("");
+      setSummary("");
+      setSnippets("");
     },
   });
 
@@ -86,7 +94,14 @@ export function EvidencePage() {
   });
 
   const handleCreate = () => {
-    createMutation.mutate({ title, type });
+    createMutation.mutate({
+      title,
+      type,
+      last_reviewed: lastReviewed,
+      owner: owner || "Current User",
+      summary: summary || "No summary provided",
+      snippets: snippets.split("\n").filter(Boolean),
+    });
   };
 
   return (
@@ -112,9 +127,9 @@ export function EvidencePage() {
                 Add a new evidence record to support your security answers
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
                   placeholder="e.g. SOC 2 Type II Report"
@@ -123,12 +138,51 @@ export function EvidencePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">Type *</Label>
                 <Input
                   id="type"
-                  placeholder="e.g. audit_report, policy, screenshot"
+                  placeholder="e.g. audit_report, policy, certification"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="owner">Owner</Label>
+                  <Input
+                    id="owner"
+                    placeholder="Security Team"
+                    value={owner}
+                    onChange={(e) => setOwner(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastReviewed">Last Reviewed *</Label>
+                  <Input
+                    id="lastReviewed"
+                    type="date"
+                    value={lastReviewed}
+                    onChange={(e) => setLastReviewed(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="summary">Summary *</Label>
+                <Input
+                  id="summary"
+                  placeholder="Brief description of this evidence"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="snippets">Snippets * (one per line)</Label>
+                <textarea
+                  id="snippets"
+                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder="e.g.&#10;We maintain ISO 27001:2022 certification.&#10;Annual audits are conducted by BSI Group."
+                  value={snippets}
+                  onChange={(e) => setSnippets(e.target.value)}
                 />
               </div>
             </div>
@@ -141,7 +195,7 @@ export function EvidencePage() {
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={!title || createMutation.isPending}
+                disabled={!title || !type || !lastReviewed || !snippets.trim() || createMutation.isPending}
               >
                 {createMutation.isPending ? "Creating..." : "Create"}
               </Button>

@@ -177,7 +177,12 @@ export async function deleteEvidence(id: string): Promise<void> {
 }
 
 export async function getSampleQuestions(): Promise<string[]> {
-  const response = await api.get<string[]>("/api/v1/sample");
+  const response = await api.get<string[]>("/api/v1/answers/sample");
+  return response.data;
+}
+
+export async function getAnswerGenerations(): Promise<AnswerGeneration[]> {
+  const response = await api.get<AnswerGeneration[]>("/api/v1/answers");
   return response.data;
 }
 

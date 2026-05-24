@@ -150,8 +150,14 @@ class TestLoadTemplates(unittest.TestCase):
 class TestMatchTemplate(unittest.TestCase):
     def setUp(self):
         self.templates = [
-            AnswerTemplate(category="encryption", keywords=["encrypt", "encryption", "tls", "at-rest"], label="Encryption", intro="Encryption controls."),
-            AnswerTemplate(category="access-control", keywords=["access", "sso", "mfa", "offboarding"], label="Access Control", intro="Access controls."),
+            AnswerTemplate(
+                category="encryption", keywords=["encrypt", "encryption", "tls", "at-rest"],
+                label="Encryption", intro="Encryption controls.",
+            ),
+            AnswerTemplate(
+                category="access-control", keywords=["access", "sso", "mfa", "offboarding"],
+                label="Access Control", intro="Access controls.",
+            ),
         ]
 
     def test_matches_encryption(self):
@@ -762,7 +768,11 @@ class TestExportCSV(unittest.TestCase):
         results = {
             "generated_at": "2026-06-01T12:00:00",
             "as_of_date": "2026-06-01",
-            "summary": {"questions_processed": 2, "confidence_counts": {"high": 1, "low": 1}, "human_reviews_required": 1},
+            "summary": {
+                "questions_processed": 2,
+                "confidence_counts": {"high": 1, "low": 1},
+                "human_reviews_required": 1,
+            },
             "answers": [
                 {
                     "question": "Q1?",

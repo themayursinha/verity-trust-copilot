@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 
 RUN addgroup --system app && adduser --system --ingroup app app
 
@@ -9,7 +9,7 @@ COPY --chown=app:app . .
 RUN npm run build
 RUN npm cache clean --force
 
-FROM nginx:1.27-alpine AS runner
+FROM nginx:1.31-alpine AS runner
 
 RUN addgroup --system app && adduser --system --ingroup app app
 

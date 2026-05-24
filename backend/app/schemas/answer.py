@@ -17,7 +17,7 @@ class AnswerResponse(BaseModel):
     confidence_rationale: str | None
     needs_human_review: bool
     citations: list
-    freshness: dict
+    freshness: list
     created_at: datetime
 
     model_config = {"from_attributes": True}

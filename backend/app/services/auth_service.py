@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+import bcrypt
 import redis.asyncio as redis
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,38 +13,49 @@ from app.config import settings
 from app.database import get_db
 from app.models.user import User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security_scheme = HTTPBearer()
 
 REFRESH_TOKEN_EXPIRE = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 ACCESS_TOKEN_EXPIRE = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
 
-def _load_private_key() -> str:
-    if settings.JWT_PRIVATE_KEY_PATH:
-        return open(settings.JWT_PRIVATE_KEY_PATH).read()
-    return settings.SECRET_KEY
+def _get_jwt_config() -> tuple[str, str]:
+    if settings.JWT_PRIVATE_KEY_PATH and settings.JWT_PUBLIC_KEY_PATH:
+        return (
+            open(settings.JWT_PRIVATE_KEY_PATH).read(),
+            "RS256",
+        )
+    return settings.SECRET_KEY, "HS256"
 
 
-def _load_public_key() -> str:
-    if settings.JWT_PUBLIC_KEY_PATH:
-        return open(settings.JWT_PUBLIC_KEY_PATH).read()
-    return settings.SECRET_KEY
+def _load_signing_key() -> str:
+    key, _ = _get_jwt_config()
+    return key
+
+
+def _load_verify_key() -> str:
+    key, _ = _get_jwt_config()
+    return key
+
+
+def _get_algorithm() -> str:
+    _, algo = _get_jwt_config()
+    return algo
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-def verify_password(password: str, hash: str) -> bool:
-    return pwd_context.verify(password, hash)
+def verify_password(password: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + ACCESS_TOKEN_EXPIRE
     to_encode.update({"exp": expire, "type": "access", "jti": str(uuid4())})
-    return jwt.encode(to_encode, _load_private_key(), algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(to_encode, _load_signing_key(), algorithm=_get_algorithm())
 
 
 def create_refresh_token(data: dict) -> tuple[str, str]:
@@ -52,13 +63,13 @@ def create_refresh_token(data: dict) -> tuple[str, str]:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + REFRESH_TOKEN_EXPIRE
     to_encode.update({"exp": expire, "type": "refresh", "jti": jti})
-    token = jwt.encode(to_encode, _load_private_key(), algorithm=settings.JWT_ALGORITHM)
+    token = jwt.encode(to_encode, _load_signing_key(), algorithm=_get_algorithm())
     return token, jti
 
 
 def decode_token(token: str) -> dict:
     try:
-        return jwt.decode(token, _load_public_key(), algorithms=[settings.JWT_ALGORITHM])
+        return jwt.decode(token, _load_verify_key(), algorithms=[_get_algorithm()])
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 

@@ -1,4 +1,4 @@
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 RUN groupadd --system app && useradd --system --gid app app
 
@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir \
     sentry-sdk \
     slowapi \
     prometheus-fastapi-instrumentator \
-    "passlib[bcrypt]" \
+    bcrypt \
     "python-jose[cryptography]" \
     python-multipart \
     && pip cache purge

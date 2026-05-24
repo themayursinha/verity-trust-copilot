@@ -78,7 +78,7 @@ async def list_answer_generations(
                         confidence_rationale=a.confidence_rationale,
                         needs_human_review=a.needs_human_review,
                         citations=a.citations or [],
-                        freshness=a.freshness or {},
+                        freshness=a.freshness or [],
                         created_at=a.created_at,
                     )
                     for a in answers
@@ -125,7 +125,7 @@ async def get_answer_generation(
                 confidence_rationale=a.confidence_rationale,
                 needs_human_review=a.needs_human_review,
                 citations=a.citations or [],
-                freshness=a.freshness or {},
+                freshness=a.freshness or [],
                 created_at=a.created_at,
             )
             for a in answers
@@ -206,7 +206,7 @@ async def generate_answers(
                 confidence_rationale=a.confidence_rationale,
                 needs_human_review=a.needs_human_review,
                 citations=a.citations or [],
-                freshness=a.freshness or {},
+                freshness=a.freshness or [],
                 created_at=a.created_at,
             )
             for a in answer_objs

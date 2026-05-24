@@ -29,7 +29,7 @@ class Answer(Base):
     confidence_rationale = Column(Text, nullable=True)
     needs_human_review = Column(Boolean, default=False)
     citations = Column(JSONB, default=[])
-    freshness = Column(JSONB, default={})
+    freshness = Column(JSONB, default=[])
     created_at = Column(DateTime, default=func.now())
 
 

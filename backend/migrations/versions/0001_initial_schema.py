@@ -77,7 +77,7 @@ def upgrade() -> None:
         sa.Column("confidence_rationale", sa.Text, nullable=True),
         sa.Column("needs_human_review", sa.Boolean, default=False),
         sa.Column("citations", postgresql.JSONB, default=[]),
-        sa.Column("freshness", postgresql.JSONB, default={}),
+        sa.Column("freshness", postgresql.JSONB, default=[]),
         sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
     )
 

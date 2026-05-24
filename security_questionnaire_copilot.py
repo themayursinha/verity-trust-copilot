@@ -167,11 +167,12 @@ def expand_terms(tokens: list[str]) -> dict[str, float]:
     return terms
 
 
-def compute_idf(snippets: list[EvidenceSnippet]) -> dict[str, float]:
+def compute_idf(snippets: list[EvidenceSnippet]) -> tuple[dict[str, float], float]:
     n = len(snippets)
     if n == 0:
-        return {}
+        return {}, 0.0
     df: Counter[str] = Counter()
+    doc_lengths: list[int] = []
     for snippet in snippets:
         evidence_text = " ".join(
             [
@@ -183,13 +184,16 @@ def compute_idf(snippets: list[EvidenceSnippet]) -> dict[str, float]:
                 snippet.snippet,
             ]
         )
-        for term in set(tokenize(evidence_text)):
+        tokens = tokenize(evidence_text)
+        doc_lengths.append(len(tokens))
+        for term in set(tokens):
             df[term] += 1
 
+    avgdl = sum(doc_lengths) / n if doc_lengths else 0.0
     idf: dict[str, float] = {}
     for term, doc_count in df.items():
-        idf[term] = math.log(1.0 + n / (1.0 + doc_count))
-    return idf
+        idf[term] = max(0.5, math.log(1.0 + (n - doc_count + 0.5) / (doc_count + 0.5)))
+    return idf, avgdl
 
 
 def parse_date(value: str) -> date:
@@ -235,12 +239,45 @@ def freshness_status(last_reviewed: date, as_of: date) -> tuple[str, int]:
     return "outdated", age_days
 
 
+FIELDS: list[tuple[str, float]] = [
+    ("title", 3.0),
+    ("summary", 2.0),
+    ("snippet", 1.5),
+    ("frameworks", 2.0),
+    ("control_ids", 2.0),
+    ("evidence_type", 1.0),
+]
+
+K1 = 1.5
+
+
 def score_snippet(
-    question: str, snippet: EvidenceSnippet, as_of: date, idf: dict[str, float] | None = None
+    question: str,
+    snippet: EvidenceSnippet,
+    as_of: date,
+    idf: dict[str, float] | None = None,
+    avgdl: float = 0.0,
 ) -> Match | None:
     q_tokens = tokenize(question)
     q_terms = expand_terms(q_tokens)
-    evidence_text = " ".join(
+
+    matched_terms: set[str] = set()
+    score = 0.0
+    for field_text, field_weight in FIELDS:
+        f_text = getattr(snippet, field_text, "")
+        if isinstance(f_text, list):
+            f_text = " ".join(f_text)
+        f_tokens = tokenize(f_text)
+        f_terms = Counter(f_tokens)
+        for term, q_weight in q_terms.items():
+            tf = f_terms.get(term, 0)
+            if tf > 0:
+                matched_terms.add(term)
+                idf_weight = idf.get(term, 1.0) if idf else 1.0
+                bm25_tf = (tf * (K1 + 1)) / (tf + K1)
+                score += q_weight * field_weight * idf_weight * bm25_tf
+
+    evidence_combined = " ".join(
         [
             snippet.title,
             snippet.evidence_type,
@@ -250,19 +287,8 @@ def score_snippet(
             snippet.snippet,
         ]
     )
-    e_tokens = tokenize(evidence_text)
-    e_terms = Counter(e_tokens)
-
-    matched_terms: list[str] = []
-    score = 0.0
-    for term, weight in q_terms.items():
-        if e_terms.get(term, 0) > 0:
-            matched_terms.append(term)
-            idf_weight = idf.get(term, 1.0) if idf else 1.0
-            score += weight * idf_weight * (1.0 + math.log1p(e_terms[term]))
-
     q_phrases = re.findall(r"\b[a-z0-9][a-z0-9\-]+(?:\s+[a-z0-9][a-z0-9\-]+){1,3}\b", question.lower())
-    evidence_lower = evidence_text.lower()
+    evidence_lower = evidence_combined.lower()
     for phrase in q_phrases:
         meaningful = [token for token in tokenize(phrase) if token not in STOPWORDS]
         if len(meaningful) >= 2 and " ".join(meaningful) in evidence_lower:
@@ -279,15 +305,19 @@ def score_snippet(
     return Match(
         snippet=snippet,
         score=round(score, 3),
-        matched_terms=sorted(set(matched_terms)),
+        matched_terms=sorted(matched_terms),
         freshness=freshness,
         age_days=age_days,
     )
 
 
 def retrieve(question: str, snippets: list[EvidenceSnippet], as_of: date) -> list[Match]:
-    idf = compute_idf(snippets)
-    matches = [match for snippet in snippets if (match := score_snippet(question, snippet, as_of, idf))]
+    idf, avgdl = compute_idf(snippets)
+    matches = [
+        match
+        for snippet in snippets
+        if (match := score_snippet(question, snippet, as_of, idf, avgdl))
+    ]
     matches.sort(key=lambda match: match.score, reverse=True)
     if not matches:
         return []

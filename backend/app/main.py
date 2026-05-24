@@ -4,14 +4,13 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
 
 from app.config import settings
 from app.database import Base, engine
+from app.middleware import LoggingMiddleware, setup_logging, setup_security
 from app.routers import answers, approvals, auth, dashboard, evidence, export, health, org, pentests, policies, vanta
+
+setup_logging()
 
 
 @asynccontextmanager
@@ -38,8 +37,8 @@ if settings.SENTRY_DSN:
 
 Instrumentator().instrument(app).expose(app)
 
-app.add_middleware(SlowAPIMiddleware)
-app.state.limiter = None
+app.add_middleware(LoggingMiddleware)
+setup_security(app)
 
 app.include_router(health.router)
 app.include_router(auth.router)

@@ -566,6 +566,8 @@ class CopilotHandler(BaseHTTPRequestHandler):
         if not title:
             raise ValueError("Policy title is required.")
         policies = load_policies()
+        created_at: str = datetime.now().isoformat(timespec="seconds")
+        review_interval: int = int(payload.get("review_interval_months", 12))
         policy = {
             "id": next_policy_id(policies),
             "title": title,
@@ -573,11 +575,11 @@ class CopilotHandler(BaseHTTPRequestHandler):
             "content": str(payload.get("content", "")).strip(),
             "status": "draft",
             "version": 1,
-            "review_interval_months": int(payload.get("review_interval_months", 12)),
-            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "review_interval_months": review_interval,
+            "created_at": created_at,
             "updated_at": datetime.now().isoformat(timespec="seconds"),
         }
-        next_date = self._calc_next_review(policy["created_at"], policy["review_interval_months"])
+        next_date = self._calc_next_review(created_at, review_interval)
         policy["next_review"] = next_date
         policies.append(policy)
         save_policies(policies)
@@ -593,8 +595,9 @@ class CopilotHandler(BaseHTTPRequestHandler):
                 p["category"] = str(payload.get("category", p.get("category", "information-security"))).strip()
                 p["content"] = str(payload.get("content", p.get("content", ""))).strip()
                 if "review_interval_months" in payload:
-                    p["review_interval_months"] = int(payload["review_interval_months"])
-                    next_date = self._calc_next_review(p["updated_at"], p["review_interval_months"])
+                    interval: int = int(payload["review_interval_months"])
+                    p["review_interval_months"] = interval
+                    next_date = self._calc_next_review(str(p["updated_at"]), interval)
                     p["next_review"] = next_date
                 p["updated_at"] = datetime.now().isoformat(timespec="seconds")
                 save_policies(policies)

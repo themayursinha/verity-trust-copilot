@@ -23,7 +23,11 @@ RUN pip install --no-cache-dir \
 
 WORKDIR /app
 
-COPY --chown=app:app . .
+COPY backend/ /app/
+COPY data/ /app/data/
+COPY templates/ /app/templates/
+
+RUN chown -R app:app /app
 
 USER app
 

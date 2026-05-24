@@ -19,7 +19,8 @@ from app.schemas.answer import (
 
 from pathlib import Path
 
-QUESTIONS_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "questions.json"
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+QUESTIONS_PATH = DATA_DIR / "questions.json"
 
 router = APIRouter(prefix="/api/v1/answers", tags=["answers"])
 
@@ -87,6 +88,14 @@ async def list_answer_generations(
             )
         )
     return response
+
+
+@router.get("/sample", response_model=dict)
+async def get_sample_questions(
+    current_user: User = Depends(get_current_active_user),
+):
+    questions = load_questions(QUESTIONS_PATH)
+    return {"questions": questions}
 
 
 @router.get("/{generation_id}", response_model=AnswerGenerationResponse)
@@ -213,11 +222,3 @@ async def generate_answers(
         ],
         created_at=generation.created_at,
     )
-
-
-@router.get("/sample", response_model=dict)
-async def get_sample_questions(
-    current_user: User = Depends(get_current_active_user),
-):
-    questions = load_questions(QUESTIONS_PATH)
-    return {"questions": questions}

@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   postgres:
@@ -39,8 +38,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     ports:
       - "8000:8000"

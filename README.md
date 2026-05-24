@@ -1,4 +1,4 @@
-# Security Questionnaire Copilot
+# Verity Trust Copilot
 
 A small local Python prototype for drafting enterprise security-questionnaire answers from a trusted evidence knowledge base.
 
@@ -138,13 +138,14 @@ The sample knowledge base includes evidence for:
 
 ## Local Development
 
-Install optional development tools:
+Create a project-local virtual environment and install optional development tools:
 
 ```bash
-python3 -m pip install -e '.[dev]'
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
 ```
 
-Run checks locally:
+Run checks locally through the virtual environment:
 
 ```bash
 make check
@@ -178,12 +179,12 @@ This prototype speeds up the first draft by finding relevant approved evidence a
 
 The script does not invent missing details. If evidence is absent, weak, or outdated, the answer is marked low confidence and `needs_human_review`.
 
-For example, the sample evidence includes an unsupported-claims register stating that Jamie does not currently have approved evidence for FedRAMP authorization. A FedRAMP question should therefore be handled cautiously instead of producing a false certification claim.
+For example, the sample evidence includes an unsupported-claims register stating that Verity does not currently have approved evidence for FedRAMP authorization. A FedRAMP question should therefore be handled cautiously instead of producing a false certification claim.
 
 ## Limitations
 
 - Keyword scoring (BM25) is still lexical and may miss semantic paraphrases.
-- The sample evidence is fictional and should be replaced with real approved Jamie evidence before use.
+- The sample evidence is fictional and should be replaced with real approved Verity evidence before use.
 - The dashboard, policies, pentest data, and mock Vanta import are local-only; the mock import does not call external GRC APIs.
 - The script does not understand contracts, customer-specific commitments, or regional deployment boundaries unless those are present in evidence.
 - Confidence is heuristic and should not be treated as legal or compliance approval.

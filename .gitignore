@@ -10,3 +10,4 @@ data/policies.json
 data/pentests.json
 data/vanta_config.json
 *.DS_Store
+*.egg-info/

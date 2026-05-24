@@ -422,8 +422,8 @@ class TestClaimChecks(unittest.TestCase):
             make_snippet(
                 evidence_id="unsupported-fedramp",
                 title="Unsupported Claims Register",
-                snippet="Jamie does not currently have approved evidence to claim FedRAMP authorization.",
-                summary="Tracks claims Jamie must not make because there is no approved evidence.",
+                snippet="Verity does not currently have approved evidence to claim FedRAMP authorization.",
+                summary="Tracks claims Verity must not make because there is no approved evidence.",
                 last_reviewed=date(2026, 5, 1),
             )
         ]
@@ -439,7 +439,7 @@ class TestClaimChecks(unittest.TestCase):
             make_snippet(
                 evidence_id="privacy",
                 title="Privacy Program",
-                snippet="Jamie processes customer data under documented privacy controls.",
+                snippet="Verity processes customer data under documented privacy controls.",
                 summary="Privacy controls are documented.",
                 last_reviewed=date(2026, 5, 1),
             )
@@ -457,8 +457,8 @@ class TestClaimChecks(unittest.TestCase):
                 evidence_id="iso-27001-isms",
                 title="ISO 27001 Information Security Management System",
                 frameworks=["ISO 27001"],
-                snippet="Jamie operates an ISO 27001-aligned ISMS.",
-                summary="Jamie maintains an ISO 27001-aligned information security management system.",
+                snippet="Verity operates an ISO 27001-aligned ISMS.",
+                summary="Verity maintains an ISO 27001-aligned information security management system.",
                 last_reviewed=date(2026, 5, 1),
             )
         ]
@@ -534,7 +534,7 @@ class TestGenerateAnswer(unittest.TestCase):
             category="fedramp",
             keywords=["fedramp"],
             label="FedRAMP",
-            intro="Jamie does not hold FedRAMP authorization.",
+            intro="Verity does not hold FedRAMP authorization.",
             outro="Do not communicate FedRAMP authorization to customers.",
         )
         matches = [self.make_match(score=5.0, snippet_text="No evidence for FedRAMP.")]
@@ -546,7 +546,7 @@ class TestGenerateAnswer(unittest.TestCase):
             category="fedramp",
             keywords=["fedramp"],
             label="FedRAMP",
-            intro="Jamie does not hold FedRAMP authorization.",
+            intro="Verity does not hold FedRAMP authorization.",
             outro="Do not communicate FedRAMP authorization to customers.",
         )
         matches = [self.make_match(score=0.5, snippet_text="Weak evidence.")]
@@ -735,7 +735,7 @@ class TestRenderMarkdown(unittest.TestCase):
         }
         md = render_markdown(results)
 
-        self.assertIn("Security Questionnaire Copilot Report", md)
+        self.assertIn("Verity Trust Copilot Report", md)
         self.assertIn("Generated: 2026-06-01T12:00:00", md)
         self.assertIn("Questions processed: 1", md)
         self.assertIn("High confidence: 1", md)

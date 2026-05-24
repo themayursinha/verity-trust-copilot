@@ -39,7 +39,7 @@
     "category": "iso-27001",
     "keywords": ["iso", "27001", "isms", "certification", "certified", "certifications"],
     "label": "ISO 27001",
-    "intro": "Jamie operates an ISMS with the following controls and practices:"
+    "intro": "Verity operates an ISMS with the following controls and practices:"
   },
   {
     "category": "gdpr",
@@ -57,13 +57,13 @@
     "category": "fedramp",
     "keywords": ["fedramp", "federal", "authorization", "authorized", "government"],
     "label": "FedRAMP",
-    "intro": "Jamie does not currently hold FedRAMP authorization.",
+    "intro": "Verity does not currently hold FedRAMP authorization.",
     "outro": "Do not communicate FedRAMP authorization to customers until approved evidence is available."
   },
   {
     "category": "dora",
     "keywords": ["dora", "resilience", "operational", "ict", "financial"],
     "label": "DORA Operational Resilience",
-    "intro": "Jamie maps the following ICT risk and operational resilience controls to DORA expectations:"
+    "intro": "Verity maps the following ICT risk and operational resilience controls to DORA expectations:"
   }
 ]

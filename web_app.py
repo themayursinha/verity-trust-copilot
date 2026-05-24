@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local web UI for Security Questionnaire Copilot."""
+"""Local web UI for Verity Trust Copilot."""
 
 from __future__ import annotations
 
@@ -246,7 +246,7 @@ def render_customer_ready_markdown(answer: dict[str, Any]) -> str:
 
 
 class CopilotHandler(BaseHTTPRequestHandler):
-    server_version = "SecurityQuestionnaireCopilot/0.1"
+    server_version = "VerityTrustCopilot/0.1"
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
@@ -851,7 +851,7 @@ class CopilotHandler(BaseHTTPRequestHandler):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the local Security Questionnaire Copilot UI.")
+    parser = argparse.ArgumentParser(description="Run the local Verity Trust Copilot UI.")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind.")
     parser.add_argument("--port", default=8000, type=int, help="Port to bind.")
     return parser.parse_args()
@@ -860,7 +860,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     server = ThreadingHTTPServer((args.host, args.port), CopilotHandler)
-    print(f"Security Questionnaire Copilot running at http://{args.host}:{args.port}")
+    print(f"Verity Trust Copilot running at http://{args.host}:{args.port}")
     print("Press Ctrl+C to stop.")
     server.serve_forever()
 

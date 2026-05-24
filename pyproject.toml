@@ -1,7 +1,7 @@
 [project]
-name = "security-questionnaire-copilot"
+name = "verity-trust-copilot"
 version = "0.1.0"
-description = "Local Security Questionnaire Copilot prototype"
+description = "Local Verity Trust Copilot prototype"
 requires-python = ">=3.12"
 
 [project.optional-dependencies]
@@ -9,6 +9,9 @@ dev = [
     "mypy>=1.10",
     "ruff>=0.8",
 ]
+
+[tool.setuptools]
+py-modules = ["security_questionnaire_copilot", "web_app"]
 
 [tool.ruff]
 target-version = "py312"

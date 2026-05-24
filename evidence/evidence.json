@@ -7,9 +7,9 @@
     "control_ids": ["A.5.1", "A.5.2", "A.8.8"],
     "last_reviewed": "2026-04-15",
     "owner": "Security",
-    "summary": "Jamie maintains an ISO 27001-aligned information security management system with risk assessments, policies, internal audits, management review, and corrective action tracking.",
+    "summary": "Verity maintains an ISO 27001-aligned information security management system with risk assessments, policies, internal audits, management review, and corrective action tracking.",
     "snippets": [
-      "Jamie operates an ISO 27001-aligned ISMS covering risk management, asset inventory, access control, supplier security, incident response, and secure development.",
+      "Verity operates an ISO 27001-aligned ISMS covering risk management, asset inventory, access control, supplier security, incident response, and secure development.",
       "Information security policies are reviewed at least annually and after material business, product, or regulatory changes.",
       "Internal control reviews track findings, remediation owners, due dates, and evidence of closure."
     ]
@@ -22,9 +22,9 @@
     "control_ids": ["GDPR Art. 5", "GDPR Art. 28", "GDPR Art. 32"],
     "last_reviewed": "2026-03-10",
     "owner": "Privacy",
-    "summary": "Jamie processes customer personal data under documented privacy roles, data processing agreements, subprocessors, data subject request workflows, and security measures.",
+    "summary": "Verity processes customer personal data under documented privacy roles, data processing agreements, subprocessors, data subject request workflows, and security measures.",
     "snippets": [
-      "Jamie acts as a processor for customer meeting content and processes personal data according to customer instructions under a data processing agreement.",
+      "Verity acts as a processor for customer meeting content and processes personal data according to customer instructions under a data processing agreement.",
       "The privacy program includes data minimization, purpose limitation, access restrictions, subprocessor due diligence, and data subject request support.",
       "Technical and organizational measures include encryption, least-privilege access, audit logging, incident response, and retention controls."
     ]
@@ -37,9 +37,9 @@
     "control_ids": ["DORA ICT Risk", "DORA Incident Reporting", "DORA Third-Party Risk"],
     "last_reviewed": "2026-02-20",
     "owner": "GRC",
-    "summary": "Jamie maps ICT risk management, incident handling, resilience testing, and third-party risk controls to DORA expectations for financial-sector customers.",
+    "summary": "Verity maps ICT risk management, incident handling, resilience testing, and third-party risk controls to DORA expectations for financial-sector customers.",
     "snippets": [
-      "Jamie maintains an ICT risk register covering availability, confidentiality, integrity, vendor dependency, and operational resilience risks.",
+      "Verity maintains an ICT risk register covering availability, confidentiality, integrity, vendor dependency, and operational resilience risks.",
       "Operational resilience activities include backup checks, incident exercises, post-incident reviews, and continuity planning for critical customer workflows.",
       "Supplier risk records identify critical providers, security review status, data categories processed, and contingency considerations."
     ]
@@ -82,7 +82,7 @@
     "control_ids": ["GDPR Art. 5(1)(e)", "A.8.10"],
     "last_reviewed": "2026-01-18",
     "owner": "Privacy",
-    "summary": "Jamie applies configurable retention for meeting artifacts and supports deletion requests through customer administration and support workflows.",
+    "summary": "Verity applies configurable retention for meeting artifacts and supports deletion requests through customer administration and support workflows.",
     "snippets": [
       "Meeting transcripts, summaries, and related customer content follow customer-configured retention settings where available.",
       "Deletion requests for customer content are handled through documented support and administrative workflows with completion tracking.",
@@ -97,10 +97,10 @@
     "control_ids": ["Purpose Limitation", "Customer Data Controls"],
     "last_reviewed": "2026-04-30",
     "owner": "Product Legal",
-    "summary": "Jamie limits use of customer meeting content for providing the service and does not use customer content to train foundation models unless a customer has explicitly agreed.",
+    "summary": "Verity limits use of customer meeting content for providing the service and does not use customer content to train foundation models unless a customer has explicitly agreed.",
     "snippets": [
-      "Customer meeting content is used to provide and improve the contracted Jamie service according to customer instructions and applicable agreements.",
-      "Jamie does not use customer meeting content to train third-party foundation models unless the customer has explicitly opted in through a written agreement.",
+      "Customer meeting content is used to provide and improve the contracted Verity service according to customer instructions and applicable agreements.",
+      "Verity does not use customer meeting content to train third-party foundation models unless the customer has explicitly opted in through a written agreement.",
       "AI processing controls include access restrictions, purpose limitation, vendor review, and documented handling rules for prompts, transcripts, and generated summaries."
     ]
   },
@@ -112,9 +112,9 @@
     "control_ids": ["GDPR Art. 28", "Third-Party Risk"],
     "last_reviewed": "2026-05-05",
     "owner": "Legal",
-    "summary": "Jamie maintains a subprocessor register with provider purpose, location, data categories, security review status, and customer notification obligations.",
+    "summary": "Verity maintains a subprocessor register with provider purpose, location, data categories, security review status, and customer notification obligations.",
     "snippets": [
-      "Jamie maintains a current subprocessor list that identifies hosting, analytics, customer support, and AI infrastructure providers where applicable.",
+      "Verity maintains a current subprocessor list that identifies hosting, analytics, customer support, and AI infrastructure providers where applicable.",
       "Subprocessors are reviewed before onboarding for security posture, data processing role, transfer mechanism, and contractual commitments.",
       "Customers are notified of material subprocessor changes according to the data processing agreement."
     ]
@@ -127,7 +127,7 @@
     "control_ids": ["A.5.15", "A.5.18", "CC6.2"],
     "last_reviewed": "2026-03-22",
     "owner": "IT",
-    "summary": "Jamie enforces SSO, MFA, least privilege, role-based access, access reviews, and timely offboarding for systems that may access customer data.",
+    "summary": "Verity enforces SSO, MFA, least privilege, role-based access, access reviews, and timely offboarding for systems that may access customer data.",
     "snippets": [
       "Production and customer-data system access requires SSO, MFA, manager approval, and least-privilege role assignment.",
       "Access is reviewed quarterly for production systems, administrative tools, identity groups, and privileged roles.",
@@ -142,7 +142,7 @@
     "control_ids": ["A.5.24", "A.5.25", "GDPR Art. 33"],
     "last_reviewed": "2026-02-14",
     "owner": "Security",
-    "summary": "Jamie has an incident response plan with triage, severity classification, containment, customer notification assessment, post-incident review, and lessons learned.",
+    "summary": "Verity has an incident response plan with triage, severity classification, containment, customer notification assessment, post-incident review, and lessons learned.",
     "snippets": [
       "Security incidents are triaged by severity, assigned an incident owner, and tracked through containment, eradication, recovery, and post-incident review.",
       "Potential personal data breaches are assessed for regulatory and customer notification obligations, including GDPR timing requirements where applicable.",
@@ -157,9 +157,9 @@
     "control_ids": ["A.8.8", "CC7.1"],
     "last_reviewed": "2025-09-12",
     "owner": "Security Engineering",
-    "summary": "An external penetration test was performed in 2025 against the Jamie web application and API. Critical and high findings were remediated and retested.",
+    "summary": "An external penetration test was performed in 2025 against the Verity web application and API. Critical and high findings were remediated and retested.",
     "snippets": [
-      "Jamie completed an external penetration test of the web application and API in 2025 by an independent security provider.",
+      "Verity completed an external penetration test of the web application and API in 2025 by an independent security provider.",
       "No critical findings remained open after remediation and retesting; remediation evidence is tracked by Security Engineering.",
       "The test scope included authenticated application workflows, API authorization checks, common web vulnerabilities, and cloud-exposed attack surface."
     ]
@@ -172,10 +172,10 @@
     "control_ids": ["Unsupported Claims"],
     "last_reviewed": "2026-05-10",
     "owner": "GRC",
-    "summary": "Tracks claims Jamie must not make because there is no approved evidence.",
+    "summary": "Tracks claims Verity must not make because there is no approved evidence.",
     "snippets": [
-      "Jamie does not currently have approved evidence to claim FedRAMP authorization.",
-      "Jamie does not currently have approved evidence to claim HIPAA compliance.",
+      "Verity does not currently have approved evidence to claim FedRAMP authorization.",
+      "Verity does not currently have approved evidence to claim HIPAA compliance.",
       "Questionnaire answers must not state certifications, audits, regions, or contractual commitments that are absent from approved evidence."
     ]
   }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local Security Questionnaire Copilot.
+"""Local Verity Trust Copilot.
 
 The prototype intentionally avoids external APIs. It retrieves approved evidence,
 drafts conservative answers from matched snippets, and flags weak or stale support.
@@ -537,7 +537,7 @@ def answer_question(
 
 def render_markdown(results: dict[str, Any]) -> str:
     lines = [
-        "# Security Questionnaire Copilot Report",
+        "# Verity Trust Copilot Report",
         "",
         f"Generated: {results['generated_at']}",
         f"Evidence freshness date: {results['as_of_date']}",

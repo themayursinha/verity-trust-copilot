@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Make the current Security Questionnaire Copilot prototype feel credible in a stakeholder demo while preserving its local, minimal architecture. The polish pass should make evidence quality visible at a glance so viewers can quickly understand why a draft answer is or is not well supported.
+Make the current Verity Trust Copilot prototype feel credible in a stakeholder demo while preserving its local, minimal architecture. The polish pass should make evidence quality visible at a glance so viewers can quickly understand why a draft answer is or is not well supported.
 
 ## Context
 

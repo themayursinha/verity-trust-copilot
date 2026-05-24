@@ -253,5 +253,45 @@ export async function deleteFinding(pentestId: string, findingId: string): Promi
   await api.delete(`/api/v1/pentests/${pentestId}/findings/${findingId}`);
 }
 
+export async function getLLMStatus(): Promise<{ configured: boolean; model: string | null; api_base: string | null }> {
+  const response = await api.get("/api/v1/llm/status");
+  return response.data;
+}
+
+export async function suggestLLMAnswer(question: string): Promise<{
+  question: string;
+  answer_text: string;
+  model: string;
+  usage: { prompt_tokens: number; completion_tokens: number };
+  evidence_used: number;
+  needs_human_review: boolean;
+  source: string;
+}> {
+  const response = await api.post("/api/v1/llm/suggest", { question });
+  return response.data;
+}
+
+export async function getLicenseStatus(): Promise<{
+  status: string;
+  max_seats: number;
+  org_name?: string;
+  customer_email?: string;
+  expires_at?: number;
+  reason?: string;
+  valid?: boolean;
+}> {
+  const response = await api.get("/api/v1/org/license");
+  return response.data;
+}
+
+export async function activateLicense(licenseKey: string): Promise<{
+  status: string;
+  max_seats: number;
+  org_name?: string;
+}> {
+  const response = await api.post("/api/v1/org/license/activate", { license_key: licenseKey });
+  return response.data;
+}
+
 export { type AuthResponse };
 export default api;

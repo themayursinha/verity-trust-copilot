@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { getOrgMembers, inviteMember, updateMember, removeMember, getOrgInfo } from "@/lib/api";
+import { getOrgMembers, inviteMember, updateMember, removeMember, getOrgInfo, getLicenseStatus, activateLicense } from "@/lib/api";
 
 function SettingsPage() {
   const { user, organization } = useAuth();
@@ -38,6 +38,7 @@ function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [licenseKeyInput, setLicenseKeyInput] = useState("");
 
   const { data: orgInfo } = useQuery({
     queryKey: ["orgInfo"],
@@ -47,6 +48,20 @@ function SettingsPage() {
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["members"],
     queryFn: getOrgMembers,
+  });
+
+  const { data: licenseStatus } = useQuery({
+    queryKey: ["licenseStatus"],
+    queryFn: getLicenseStatus,
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: (key: string) => activateLicense(key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["licenseStatus"] });
+      queryClient.invalidateQueries({ queryKey: ["orgInfo"] });
+      setLicenseKeyInput("");
+    },
   });
 
   const inviteMutation = useMutation({
@@ -149,6 +164,53 @@ function SettingsPage() {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">License</CardTitle>
+          <CardDescription>Manage your license key and view seat usage</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Badge variant={licenseStatus?.status === "valid" ? "default" : licenseStatus?.status === "free" ? "secondary" : "destructive"}>
+              {licenseStatus?.status === "valid" ? "Pro" : licenseStatus?.status === "free" ? "Free" : "Invalid"}
+            </Badge>
+            {licenseStatus?.max_seats != null && (
+              <span className="text-sm text-muted-foreground">
+                <strong className="text-foreground">{orgInfo?.seats_used ?? 0}</strong> / {licenseStatus.max_seats} seats
+              </span>
+            )}
+          </div>
+          {licenseStatus?.reason && (
+            <p className="text-sm text-muted-foreground">{licenseStatus.reason}</p>
+          )}
+          {licenseStatus?.expires_at && (
+            <p className="text-sm text-muted-foreground">
+              Expires: {new Date(licenseStatus.expires_at * 1000).toLocaleDateString()}
+            </p>
+          )}
+          <Separator />
+          <div className="flex gap-2">
+            <Input
+              placeholder="Paste your license key..."
+              value={licenseKeyInput}
+              onChange={(e) => setLicenseKeyInput(e.target.value)}
+              className="font-mono text-xs"
+            />
+            <Button
+              onClick={() => licenseKeyInput && activateMutation.mutate(licenseKeyInput)}
+              disabled={!licenseKeyInput || activateMutation.isPending}
+            >
+              {activateMutation.isPending ? "Activating..." : "Activate"}
+            </Button>
+          </div>
+          {activateMutation.isError && (
+            <p className="text-sm text-destructive">
+              {(activateMutation.error as Error)?.message || "Failed to activate license"}
+            </p>
+          )}
         </CardContent>
       </Card>
 

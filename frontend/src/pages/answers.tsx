@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Sparkles,
@@ -27,7 +27,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { generateAnswers, setApproval, exportAnswer, getSampleQuestions } from "@/lib/api";
+import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus } from "@/lib/api";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Answer } from "@/types";
 
 function confidenceColor(confidence: "high" | "medium" | "low" | null) {
@@ -51,6 +52,41 @@ export function AnswersPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAnswers, setGeneratedAnswers] = useState<Answer[]>([]);
   const [loadingSample, setLoadingSample] = useState(false);
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmConfigured, setLlmConfigured] = useState(false);
+  const [llmError, setLlmError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getLLMStatus().then((s) => setLlmConfigured(s.configured)).catch(() => {});
+  }, []);
+
+  const handleLLMSuggest = async () => {
+    if (!selectedAnswer) return;
+    setLlmLoading(true);
+    setLlmError(null);
+    try {
+      const result = await suggestLLMAnswer(selectedAnswer.question);
+      const llmAnswer = {
+        id: `llm-${Date.now()}`,
+        generation_id: "llm",
+        question: result.question,
+        answer_text: result.answer_text,
+        confidence: "low" as const,
+        confidence_rationale: `LLM-generated using ${result.model}. ${result.evidence_used} evidence records as context.`,
+        needs_human_review: true,
+        citations: [],
+        freshness: [],
+        created_at: new Date().toISOString(),
+        __llm: true as const,
+      };
+      setGeneratedAnswers((prev) => [llmAnswer as any, ...prev]);
+      setSelectedAnswer(llmAnswer as any);
+    } catch (e: any) {
+      setLlmError(e?.response?.data?.detail || "LLM suggestion failed");
+    } finally {
+      setLlmLoading(false);
+    }
+  };
 
   const handleGenerate = async () => {
     const qs = questions
@@ -207,6 +243,14 @@ export function AnswersPage() {
                           >
                             <AlertTriangle className="mr-1 h-3 w-3" />
                             Needs review
+                          </Badge>
+                        )}
+                        {(answer as any).__llm && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                          >
+                            LLM
                           </Badge>
                         )}
                       </div>
@@ -374,6 +418,37 @@ export function AnswersPage() {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        disabled={!llmConfigured || llmLoading}
+                        onClick={handleLLMSuggest}
+                      >
+                        {llmLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-4 w-4" />
+                        )}
+                        {llmLoading ? "Generating..." : "AI Suggest"}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {!llmConfigured
+                      ? "Set LLM_API_KEY in backend environment to enable AI suggestions"
+                      : llmLoading
+                      ? "Generating AI suggestion..."
+                      : "Generate AI-powered answer suggestion"}
+                  </TooltipContent>
+                </Tooltip>
+                {llmError && (
+                  <p className="text-sm text-destructive">{llmError}</p>
+                )}
               </CardContent>
             </Card>
           ) : (

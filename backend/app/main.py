@@ -8,7 +8,8 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from app.config import settings
 from app.database import Base, engine
 from app.middleware import LoggingMiddleware, setup_logging, setup_security
-from app.routers import answers, approvals, auth, dashboard, evidence, export, health, org, pentests, policies, vanta
+from app.middleware.license import LicenseMiddleware
+from app.routers import answers, approvals, auth, dashboard, evidence, export, health, llm, org, pentests, policies, vanta
 
 setup_logging()
 
@@ -38,6 +39,7 @@ if settings.SENTRY_DSN:
 Instrumentator().instrument(app).expose(app)
 
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(LicenseMiddleware)
 setup_security(app)
 
 app.include_router(health.router)
@@ -51,3 +53,4 @@ app.include_router(dashboard.router)
 app.include_router(policies.router)
 app.include_router(pentests.router)
 app.include_router(vanta.router)
+app.include_router(llm.router)

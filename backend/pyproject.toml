@@ -17,6 +17,7 @@ dependencies = [
     "sentry-sdk",
     "slowapi",
     "prometheus-fastapi-instrumentator",
+    "pynacl",
     "passlib[bcrypt]",
     "python-jose[cryptography]",
     "bcrypt",

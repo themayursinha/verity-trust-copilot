@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import require_admin, get_current_active_user
 from app.models.organization import Organization
@@ -93,6 +95,71 @@ async def remove_member(
     await db.delete(user)
     await db.commit()
     return None
+
+
+class LicenseActivateRequest(BaseModel):
+    license_key: str
+
+
+@router.get("/license")
+async def license_status(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    org_result = await db.execute(
+        select(Organization).where(Organization.id == current_user.org_id)
+    )
+    org = org_result.scalar_one()
+
+    if not org.license_key:
+        return {
+            "status": "free",
+            "max_seats": settings.LICENSE_FREE_SEATS,
+            "message": "Free tier — upgrade for more seats",
+        }
+
+    from app.services.license_service import validate_license
+    license_info = validate_license(org.license_key)
+
+    return {
+        "status": "valid" if license_info.valid else "invalid",
+        "max_seats": license_info.max_seats,
+        "org_name": license_info.org_name,
+        "customer_email": license_info.customer_email,
+        "expires_at": license_info.expires_at,
+        "reason": license_info.reason,
+        "valid": license_info.valid,
+    }
+
+
+@router.post("/license/activate")
+async def activate_license(
+    body: LicenseActivateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    from app.services.license_service import validate_license
+    license_info = validate_license(body.license_key)
+
+    if not license_info.valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid license: {license_info.reason}",
+        )
+
+    org_result = await db.execute(
+        select(Organization).where(Organization.id == current_user.org_id)
+    )
+    org = org_result.scalar_one()
+    org.license_key = body.license_key
+    org.max_seats = license_info.max_seats
+    await db.commit()
+
+    return {
+        "status": "activated",
+        "max_seats": license_info.max_seats,
+        "org_name": license_info.org_name,
+    }
 
 
 @router.get("/me", response_model=dict)

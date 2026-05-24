@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir \
     sentry-sdk \
     slowapi \
     prometheus-fastapi-instrumentator \
+    pynacl \
     bcrypt \
     "python-jose[cryptography]" \
     python-multipart \

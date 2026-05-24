@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 
+RUN groupadd --system app && useradd --system --gid app app
+
 RUN pip install --no-cache-dir \
     "fastapi[standard]" \
     "uvicorn[standard]" \
@@ -16,11 +18,14 @@ RUN pip install --no-cache-dir \
     prometheus-fastapi-instrumentator \
     "passlib[bcrypt]" \
     "python-jose[cryptography]" \
-    python-multipart
+    python-multipart \
+    && pip cache purge
 
 WORKDIR /app
 
-COPY . .
+COPY --chown=app:app . .
+
+USER app
 
 EXPOSE 8000
 

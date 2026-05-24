@@ -1,11 +1,15 @@
 FROM node:22-alpine
 
+RUN addgroup --system app && adduser --system --ingroup app app
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY --chown=app:app package.json package-lock.json ./
+RUN npm ci --ignore-scripts && npm cache clean --force
 
-COPY . .
+COPY --chown=app:app . .
+
+USER app
 
 EXPOSE 5173
 

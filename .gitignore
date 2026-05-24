@@ -12,3 +12,7 @@ data/pentests.json
 data/vanta_config.json
 *.DS_Store
 *.egg-info/
+.env
+secrets/
+*.pem
+*.key

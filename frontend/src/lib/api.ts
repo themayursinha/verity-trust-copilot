@@ -298,5 +298,22 @@ export async function activateLicense(licenseKey: string): Promise<{
   return response.data;
 }
 
+export async function getSoc2Report(): Promise<{
+  format: string;
+  report: string;
+  generated_at: string;
+  stats: {
+    evidence: number;
+    policies: number;
+    pentests: number;
+    answers: number;
+    approved_answers: number;
+    needs_review: number;
+  };
+}> {
+  const response = await api.get("/api/v1/reports/soc2");
+  return response.data;
+}
+
 export { type AuthResponse };
 export default api;

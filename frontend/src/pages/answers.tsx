@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ExternalLink,
   Clock,
+  FileUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,8 +29,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus, getAnswerGenerations } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { parseQuestions } from "@/lib/parse-questions";
 import type { Answer, AnswerGeneration } from "@/types";
 
 function confidenceColor(confidence: "high" | "medium" | "low" | null) {
@@ -56,6 +65,8 @@ export function AnswersPage() {
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmConfigured, setLlmConfigured] = useState(false);
   const [llmError, setLlmError] = useState<string | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importText, setImportText] = useState("");
 
   const { data: generations, isLoading: loadingGenerations } = useQuery({
     queryKey: ["answer-generations"],
@@ -209,6 +220,13 @@ export function AnswersPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               Load Sample
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setImportDialogOpen(true)}
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Paste Questionnaire
             </Button>
           </div>
         </CardContent>
@@ -482,6 +500,51 @@ export function AnswersPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Import Questions</DialogTitle>
+            <DialogDescription>
+              Paste a security questionnaire and we&apos;ll extract the questions automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <textarea
+              className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder={`Paste your questionnaire here. We support:\n\n1. What is your encryption standard?\n2. How do you handle incidents?\nQ3: Do you have a disaster recovery plan?\n• Are you SOC 2 certified?\n\nOr just lines ending with question marks?`}
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+            />
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {importText.trim() ? `${parseQuestions(importText).length} questions detected` : "Paste text above to detect questions"}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => { setImportDialogOpen(false); setImportText(""); }}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    const qs = parseQuestions(importText);
+                    if (qs.length > 0) {
+                      setQuestions((prev) => {
+                        const existing = new Set(prev.split("\n").filter(Boolean));
+                        return [...prev.split("\n").filter(Boolean), ...qs.filter((q) => !existing.has(q))].join("\n");
+                      });
+                      setImportDialogOpen(false);
+                      setImportText("");
+                    }
+                  }}
+                  disabled={!importText.trim() || parseQuestions(importText).length === 0}
+                >
+                  Import {importText.trim() ? parseQuestions(importText).length : ""} Questions
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

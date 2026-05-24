@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboard } from "@/lib/api";
+import { getDashboard, getSoc2Report } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, FileText, ShieldCheck, BugPlay, ScrollText } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Download, FileText, Loader2, ShieldCheck, BugPlay, ScrollText } from "lucide-react";
 
 function DashboardSkeleton() {
   return (
@@ -51,11 +53,30 @@ const formatFrameworkId = (id: string) => {
 };
 
 export function DashboardPage() {
+  const [exportingReport, setExportingReport] = useState(false);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["dashboard"],
     queryFn: getDashboard,
     refetchInterval: 60000,
   });
+
+  const handleExportReport = async () => {
+    setExportingReport(true);
+    try {
+      const reportData = await getSoc2Report();
+      const blob = new Blob([reportData.report], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `soc2-report-${new Date().toISOString().split("T")[0]}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+    } finally {
+      setExportingReport(false);
+    }
+  };
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -76,10 +97,22 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-sm text-muted-foreground">
-          Overview of your security compliance posture
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+            <p className="text-sm text-muted-foreground">
+              Overview of your security compliance posture
+            </p>
+          </div>
+          <Button variant="outline" onClick={handleExportReport} disabled={exportingReport}>
+            {exportingReport ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            {exportingReport ? "Generating..." : "Export SOC 2 Report"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

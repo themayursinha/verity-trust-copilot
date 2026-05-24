@@ -1,4 +1,5 @@
 .superpowers/
+.opencode/
 __pycache__/
 *.pyc
 outputs/

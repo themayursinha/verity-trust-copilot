@@ -1,0 +1,43 @@
+[project]
+name = "verity-trust-copilot"
+version = "0.1.0"
+description = "Self-hosted SaaS security questionnaire copilot"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]",
+    "uvicorn[standard]",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "alembic",
+    "pydantic-settings",
+    "pydantic",
+    "redis",
+    "httpx",
+    "structlog",
+    "sentry-sdk",
+    "slowapi",
+    "prometheus-fastapi-instrumentator",
+    "passlib[bcrypt]",
+    "python-jose[cryptography]",
+    "bcrypt",
+    "python-multipart",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "httpx",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"

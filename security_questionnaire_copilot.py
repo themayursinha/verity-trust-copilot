@@ -8,6 +8,8 @@ drafts conservative answers from matched snippets, and flags weak or stale suppo
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import math
 import re
@@ -113,6 +115,37 @@ class Match:
     matched_terms: list[str]
     freshness: str
     age_days: int
+
+
+@dataclass
+class AnswerTemplate:
+    category: str
+    keywords: list[str]
+    label: str
+    intro: str | None = None
+    outro: str | None = None
+
+
+DEFAULT_TEMPLATES_PATH = Path(__file__).resolve().parent / "templates" / "answer_templates.json"
+
+
+def load_templates(path: Path) -> list[AnswerTemplate]:
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return [AnswerTemplate(**item) for item in data]
+
+
+def match_template(question: str, templates: list[AnswerTemplate]) -> AnswerTemplate | None:
+    q_tokens = set(tokenize(question))
+    best_template: AnswerTemplate | None = None
+    best_count = 0
+    for tmpl in templates:
+        count = sum(1 for kw in tmpl.keywords if kw in q_tokens)
+        if count > best_count and count >= 2:
+            best_count = count
+            best_template = tmpl
+    return best_template
 
 
 def tokenize(text: str) -> list[str]:
@@ -299,7 +332,9 @@ def citation_id(match: Match, index: int) -> str:
     return f"S{index}:{match.snippet.evidence_id}"
 
 
-def generate_answer(question: str, matches: list[Match], level: str) -> str:
+def generate_answer(
+    question: str, matches: list[Match], level: str, template: AnswerTemplate | None = None
+) -> str:
     if not matches:
         return (
             "Needs human review. I could not find approved evidence that supports an answer to this question. "
@@ -311,24 +346,36 @@ def generate_answer(question: str, matches: list[Match], level: str) -> str:
             "Needs human review. The evidence below may be relevant, but it is not "
             "strong enough for an unsupported claim."
         )
+    elif template and template.intro:
+        lead = f"Draft answer based on approved evidence for {template.label}: {template.intro}"
     else:
         lead = "Draft answer based on approved evidence:"
 
     sentences = [lead]
     for index, match in enumerate(matches, start=1):
         sentences.append(f"{match.snippet.snippet} [{citation_id(match, index)}]")
+
+    if template and template.outro and level != "low":
+        sentences.append(template.outro)
     return " ".join(sentences)
 
 
-def answer_question(question: str, snippets: list[EvidenceSnippet], as_of: date) -> dict[str, Any]:
+def answer_question(
+    question: str,
+    snippets: list[EvidenceSnippet],
+    as_of: date,
+    templates: list[AnswerTemplate] | None = None,
+) -> dict[str, Any]:
     matches = retrieve(question, snippets, as_of)
     level, rationale = confidence(matches)
     needs_review = level == "low"
+    matched_template = match_template(question, templates) if templates else None
     return {
         "question": question,
-        "answer": generate_answer(question, matches, level),
+        "answer": generate_answer(question, matches, level, matched_template),
         "confidence": level,
         "needs_human_review": needs_review,
+        "template_category": matched_template.category if matched_template else None,
         "confidence_rationale": rationale,
         "freshness": [
             {
@@ -434,9 +481,18 @@ def render_markdown(results: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def build_results(questions: list[str], evidence: list[EvidenceSnippet], as_of: date) -> dict[str, Any]:
-    answers = [answer_question(question, evidence, as_of) for question in questions]
+def build_results(
+    questions: list[str], evidence: list[EvidenceSnippet], as_of: date, templates: list[AnswerTemplate] | None = None
+) -> dict[str, Any]:
+    if templates is None:
+        templates = load_templates(DEFAULT_TEMPLATES_PATH)
+    answers = [answer_question(question, evidence, as_of, templates) for question in questions]
     counts = Counter(answer["confidence"] for answer in answers)
+    category_counts: dict[str, int] = Counter()
+    for answer in answers:
+        cat = answer.get("template_category")
+        if cat:
+            category_counts[cat] += 1
     return {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of_date": as_of.isoformat(),
@@ -444,18 +500,52 @@ def build_results(questions: list[str], evidence: list[EvidenceSnippet], as_of: 
             "questions_processed": len(questions),
             "confidence_counts": dict(counts),
             "human_reviews_required": sum(1 for answer in answers if answer["needs_human_review"]),
+            "template_categories": dict(category_counts),
         },
         "answers": answers,
     }
 
 
-def write_outputs(results: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
+def export_csv(results: dict[str, Any]) -> str:
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Question",
+        "Answer",
+        "Confidence",
+        "Needs Human Review",
+        "Template Category",
+        "Sources",
+        "Source Count",
+        "Freshness Status",
+    ])
+    for answer in results["answers"]:
+        sources = "; ".join(c["citation"] for c in answer.get("citations", []))
+        freshness = "; ".join(
+            f"{f['source']}: {f['status']}" for f in answer.get("freshness", [])
+        )
+        writer.writerow([
+            answer.get("question", ""),
+            answer.get("answer", ""),
+            answer.get("confidence", ""),
+            str(answer.get("needs_human_review", False)),
+            answer.get("template_category", ""),
+            sources,
+            len(answer.get("citations", [])),
+            freshness,
+        ])
+    return output.getvalue()
+
+
+def write_outputs(results: dict[str, Any], output_dir: Path) -> tuple[Path, Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / "answers.json"
     markdown_path = output_dir / "report.md"
+    csv_path = output_dir / "answers.csv"
     json_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
     markdown_path.write_text(render_markdown(results), encoding="utf-8")
-    return json_path, markdown_path
+    csv_path.write_text(export_csv(results), encoding="utf-8")
+    return json_path, markdown_path, csv_path
 
 
 def parse_args() -> argparse.Namespace:
@@ -473,9 +563,10 @@ def main() -> None:
     evidence = load_evidence(args.evidence)
     questions = load_questions(args.questions)
     results = build_results(questions, evidence, as_of)
-    json_path, markdown_path = write_outputs(results, args.output_dir)
+    json_path, markdown_path, csv_path = write_outputs(results, args.output_dir)
     print(f"Wrote {json_path}")
     print(f"Wrote {markdown_path}")
+    print(f"Wrote {csv_path}")
     print(
         "Processed {questions} questions: {counts}".format(
             questions=results["summary"]["questions_processed"],

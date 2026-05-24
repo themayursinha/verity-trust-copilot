@@ -1,0 +1,69 @@
+[
+  {
+    "category": "encryption",
+    "keywords": ["encrypt", "encryption", "encrypted", "tls", "at-rest", "transit"],
+    "label": "Encryption",
+    "intro": "Customer data is encrypted at rest and in transit using the following controls:"
+  },
+  {
+    "category": "access-control",
+    "keywords": ["access", "sso", "mfa", "offboarding", "least privilege", "joiner", "mover", "leaver", "role-based"],
+    "label": "Access Control",
+    "intro": "Employee and system access is managed through the following access controls:"
+  },
+  {
+    "category": "ai-data-usage",
+    "keywords": ["ai", "model", "train", "training", "foundation", "prompts", "transcripts", "summaries"],
+    "label": "AI Data Usage",
+    "intro": "Customer meeting content is handled according to the following principles:"
+  },
+  {
+    "category": "data-retention",
+    "keywords": ["retention", "retain", "deletion", "delete", "backup", "backups", "retained"],
+    "label": "Data Retention and Deletion",
+    "intro": "Meeting data is retained and deleted according to the following controls:"
+  },
+  {
+    "category": "incident-response",
+    "keywords": ["incident", "breach", "triage", "containment", "notification", "notify"],
+    "label": "Incident Response",
+    "intro": "Security incidents are handled according to the following plan:"
+  },
+  {
+    "category": "subprocessors",
+    "keywords": ["subprocessor", "subprocessors", "vendor", "vendors", "third-party", "supplier", "subcontractor"],
+    "label": "Subprocessor Management",
+    "intro": "Subprocessor use and notification follows these practices:"
+  },
+  {
+    "category": "iso-27001",
+    "keywords": ["iso", "27001", "isms", "certification", "certified", "certifications"],
+    "label": "ISO 27001",
+    "intro": "Jamie operates an ISMS with the following controls and practices:"
+  },
+  {
+    "category": "gdpr",
+    "keywords": ["gdpr", "privacy", "dpa", "data protection", "processor", "data subject"],
+    "label": "GDPR Compliance",
+    "intro": "Personal data is processed according to the following privacy and data protection practices:"
+  },
+  {
+    "category": "penetration-testing",
+    "keywords": ["pentest", "penetration", "test", "testing", "vulnerability", "vulnerabilities"],
+    "label": "Penetration Testing",
+    "intro": "Application and infrastructure security testing is conducted as follows:"
+  },
+  {
+    "category": "fedramp",
+    "keywords": ["fedramp", "federal", "authorization", "authorized", "government"],
+    "label": "FedRAMP",
+    "intro": "Jamie does not currently hold FedRAMP authorization.",
+    "outro": "Do not communicate FedRAMP authorization to customers until approved evidence is available."
+  },
+  {
+    "category": "dora",
+    "keywords": ["dora", "resilience", "operational", "ict", "financial"],
+    "label": "DORA Operational Resilience",
+    "intro": "Jamie maps the following ICT risk and operational resilience controls to DORA expectations:"
+  }
+]

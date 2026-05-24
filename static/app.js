@@ -169,10 +169,13 @@ function renderDetail() {
         <span class="review-state">${escapeHtml(quality.reviewLabel)}</span>
       </div>
       <h3>${escapeHtml(answer.question)}</h3>
+      ${answer.template_category ? `<span class="meta-chip">${escapeHtml(answer.template_category)}</span>` : ""}
       ${renderEvidenceStrip(answer)}
       <p>${escapeHtml(answer.confidence_rationale)}</p>
       <div class="button-row detail-actions">
         <button id="exportMarkdownBtn" class="primary-button" type="button">Export Markdown</button>
+        <button id="exportCSVBtn" class="ghost-button" type="button">Export CSV</button>
+        <button id="exportJSONBtn" class="ghost-button" type="button">Export JSON</button>
       </div>
     </div>
     <div class="answer-body${warningClass}">${escapeHtml(answer.answer)}</div>
@@ -186,6 +189,8 @@ function renderDetail() {
     </div>
   `;
   document.querySelector("#exportMarkdownBtn").addEventListener("click", () => exportMarkdown(answer));
+  document.querySelector("#exportCSVBtn").addEventListener("click", () => exportCSV(answer));
+  document.querySelector("#exportJSONBtn").addEventListener("click", () => exportStructuredJSON(answer));
 }
 
 function renderFreshness(items) {
@@ -364,6 +369,60 @@ async function handleEvidenceFile() {
     const stored = await postEvidence(records);
     evidenceFile.value = "";
     setStatus(`Uploaded and stored ${stored} evidence document${stored === 1 ? "" : "s"}.`, "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function exportCSV(answer) {
+  try {
+    const response = await fetch("/api/export/csv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer }),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Unable to export CSV.");
+    }
+
+    const blob = new Blob([payload.csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "customer_ready_answer.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus(`Exported CSV to ${payload.path}.`, "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function exportStructuredJSON(answer) {
+  try {
+    const response = await fetch("/api/export/json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer }),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Unable to export JSON.");
+    }
+
+    const blob = new Blob([payload.json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "customer_ready_answer.json";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus(`Exported structured JSON to ${payload.path}.`, "success");
   } catch (error) {
     setStatus(error.message, "error");
   }

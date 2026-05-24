@@ -6,14 +6,21 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import date
+from datetime import date, datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from security_questionnaire_copilot import build_results, load_evidence, load_questions, parse_date, write_outputs
+from security_questionnaire_copilot import (
+    build_results,
+    export_csv,
+    load_evidence,
+    load_questions,
+    parse_date,
+    write_outputs,
+)
 
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
@@ -168,6 +175,14 @@ class CopilotHandler(BaseHTTPRequestHandler):
                 self.export_answer(payload)
                 return
 
+            if path == "/api/export/csv":
+                self.export_csv_answer(payload)
+                return
+
+            if path == "/api/export/json":
+                self.export_json_answer(payload)
+                return
+
             if path != "/api/answer":
                 self.send_error(HTTPStatus.NOT_FOUND)
                 return
@@ -226,6 +241,46 @@ class CopilotHandler(BaseHTTPRequestHandler):
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         export_path.write_text(markdown, encoding="utf-8")
         self.send_json({"path": str(export_path), "markdown": markdown})
+
+    def export_csv_answer(self, payload: dict[str, Any]) -> None:
+        answer = payload.get("answer")
+        if not isinstance(answer, dict):
+            raise ValueError("Send an answer object to export.")
+        results = {
+            "generated_at": datetime.now().isoformat(timespec="seconds"),
+            "as_of_date": date.today().isoformat(),
+            "summary": {
+                "questions_processed": 1,
+                "confidence_counts": {answer.get("confidence", "low"): 1},
+                "human_reviews_required": 1 if answer.get("needs_human_review") else 0,
+            },
+            "answers": [answer],
+        }
+        csv_content = export_csv(results)
+        export_path = OUTPUT_DIR / "customer_ready_answer.csv"
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        export_path.write_text(csv_content, encoding="utf-8")
+        self.send_json({"path": str(export_path), "csv": csv_content})
+
+    def export_json_answer(self, payload: dict[str, Any]) -> None:
+        answer = payload.get("answer")
+        if not isinstance(answer, dict):
+            raise ValueError("Send an answer object to export.")
+        results = {
+            "generated_at": datetime.now().isoformat(timespec="seconds"),
+            "as_of_date": date.today().isoformat(),
+            "summary": {
+                "questions_processed": 1,
+                "confidence_counts": {answer.get("confidence", "low"): 1},
+                "human_reviews_required": 1 if answer.get("needs_human_review") else 0,
+            },
+            "answers": [answer],
+        }
+        json_content = json.dumps(results, indent=2)
+        export_path = OUTPUT_DIR / "customer_ready_answer.json"
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        export_path.write_text(json_content, encoding="utf-8")
+        self.send_json({"path": str(export_path), "json": json_content})
 
     def serve_file(self, path: Path) -> None:
         if not path.exists() or not path.is_file():

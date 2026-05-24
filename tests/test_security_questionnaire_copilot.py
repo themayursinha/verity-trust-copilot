@@ -11,16 +11,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from security_questionnaire_copilot import (
     FRESH_DAYS,
     STALE_DAYS,
+    AnswerTemplate,
     EvidenceSnippet,
     Match,
     answer_question,
     build_results,
     confidence,
     expand_terms,
+    export_csv,
     freshness_status,
     generate_answer,
     load_evidence,
     load_questions,
+    load_templates,
+    match_template,
     parse_date,
     render_markdown,
     retrieve,
@@ -114,6 +118,67 @@ class TestExpandTerms(unittest.TestCase):
         self.assertIn("encrypt", terms)
         self.assertIn("breach", terms)
         self.assertIn("triage", terms)
+
+
+class TestLoadTemplates(unittest.TestCase):
+    def test_load_from_file(self):
+        path = Path(__file__).resolve().parent.parent / "templates" / "answer_templates.json"
+        templates = load_templates(path)
+        self.assertGreater(len(templates), 0)
+        self.assertIsInstance(templates[0], AnswerTemplate)
+        self.assertTrue(hasattr(templates[0], "category"))
+        self.assertTrue(hasattr(templates[0], "keywords"))
+        self.assertTrue(hasattr(templates[0], "label"))
+
+    def test_missing_file(self):
+        templates = load_templates(Path("/nonexistent/templates.json"))
+        self.assertEqual(templates, [])
+
+    def test_template_has_intro(self):
+        path = Path(__file__).resolve().parent.parent / "templates" / "answer_templates.json"
+        templates = load_templates(path)
+        encryption = [t for t in templates if t.category == "encryption"]
+        self.assertEqual(len(encryption), 1)
+        self.assertIsNotNone(encryption[0].intro)
+
+    def test_template_has_keywords(self):
+        path = Path(__file__).resolve().parent.parent / "templates" / "answer_templates.json"
+        templates = load_templates(path)
+        self.assertIn("encryption", templates[0].keywords)
+
+
+class TestMatchTemplate(unittest.TestCase):
+    def setUp(self):
+        self.templates = [
+            AnswerTemplate(category="encryption", keywords=["encrypt", "encryption", "tls", "at-rest"], label="Encryption", intro="Encryption controls."),
+            AnswerTemplate(category="access-control", keywords=["access", "sso", "mfa", "offboarding"], label="Access Control", intro="Access controls."),
+        ]
+
+    def test_matches_encryption(self):
+        result = match_template("How do you encrypt data and use tls?", self.templates)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.category, "encryption")
+
+    def test_matches_access_control(self):
+        result = match_template("How is sso and mfa access controlled?", self.templates)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.category, "access-control")
+
+    def test_no_match_single_keyword(self):
+        result = match_template("How about encryption?", self.templates)
+        self.assertIsNone(result)
+
+    def test_no_match(self):
+        result = match_template("What is the weather?", self.templates)
+        self.assertIsNone(result)
+
+    def test_empty_question(self):
+        result = match_template("", self.templates)
+        self.assertIsNone(result)
+
+    def test_empty_templates(self):
+        result = match_template("encryption tls", [])
+        self.assertIsNone(result)
 
 
 class TestParseDate(unittest.TestCase):
@@ -378,6 +443,50 @@ class TestGenerateAnswer(unittest.TestCase):
         self.assertIn("[S1:src-a]", answer)
         self.assertIn("[S2:src-b]", answer)
 
+    def test_template_intro_included(self):
+        template = AnswerTemplate(
+            category="encryption",
+            keywords=["encrypt", "encryption"],
+            label="Encryption",
+            intro="Customer data is encrypted using the following controls:",
+        )
+        matches = [self.make_match(score=5.0, snippet_text="TLS 1.2 is used.")]
+        answer = generate_answer("How is encryption handled?", matches, "high", template)
+        self.assertIn("Draft answer based on approved evidence for Encryption", answer)
+        self.assertIn("Customer data is encrypted using the following controls", answer)
+        self.assertIn("TLS 1.2 is used", answer)
+
+    def test_template_outro_included(self):
+        template = AnswerTemplate(
+            category="fedramp",
+            keywords=["fedramp"],
+            label="FedRAMP",
+            intro="Jamie does not hold FedRAMP authorization.",
+            outro="Do not communicate FedRAMP authorization to customers.",
+        )
+        matches = [self.make_match(score=5.0, snippet_text="No evidence for FedRAMP.")]
+        answer = generate_answer("Are you FedRAMP authorized?", matches, "high", template)
+        self.assertIn("Do not communicate FedRAMP authorization", answer)
+
+    def test_template_outro_suppressed_on_low_confidence(self):
+        template = AnswerTemplate(
+            category="fedramp",
+            keywords=["fedramp"],
+            label="FedRAMP",
+            intro="Jamie does not hold FedRAMP authorization.",
+            outro="Do not communicate FedRAMP authorization to customers.",
+        )
+        matches = [self.make_match(score=0.5, snippet_text="Weak evidence.")]
+        answer = generate_answer("Are you FedRAMP authorized?", matches, "low", template)
+        self.assertNotIn("Do not communicate FedRAMP authorization", answer)
+        self.assertIn("Needs human review", answer)
+
+    def test_template_none_uses_default_lead(self):
+        matches = [self.make_match(score=5.0, snippet_text="Data is encrypted.")]
+        answer = generate_answer("How is encryption handled?", matches, "high")
+        self.assertIn("Draft answer based on approved evidence:", answer)
+        self.assertNotIn("approved evidence for", answer)
+
 
 class TestAnswerQuestion(unittest.TestCase):
     def test_full_answer_structure(self):
@@ -395,6 +504,7 @@ class TestAnswerQuestion(unittest.TestCase):
         self.assertIn("answer", result)
         self.assertIn("confidence", result)
         self.assertIn("needs_human_review", result)
+        self.assertIn("template_category", result)
         self.assertIn("confidence_rationale", result)
         self.assertIn("freshness", result)
         self.assertIn("citations", result)
@@ -422,6 +532,46 @@ class TestAnswerQuestion(unittest.TestCase):
         self.assertEqual(citation["source_id"], "encryption")
         self.assertEqual(citation["score"], citation.get("score"))
         self.assertEqual(citation["matched_terms"], citation.get("matched_terms"))
+
+    def test_template_matching_with_templates(self):
+        templates = [
+            AnswerTemplate(
+                category="encryption",
+                keywords=["encrypt", "encryption", "tls", "at-rest"],
+                label="Encryption",
+                intro="Encryption controls.",
+            ),
+        ]
+        snippets = [
+            make_snippet(
+                evidence_id="encryption",
+                snippet=(
+                    "TLS is used for encryption encryption encryption encryption "
+                    "encryption encryption encryption encryption at rest."
+                ),
+                last_reviewed=date(2026, 5, 1),
+            ),
+            make_snippet(
+                evidence_id="unrelated",
+                snippet="This is a snippet about unrelated content.",
+                last_reviewed=date(2026, 5, 1),
+            ),
+            make_snippet(
+                evidence_id="also-unrelated",
+                snippet="This is also completely unrelated.",
+                last_reviewed=date(2026, 5, 1),
+            ),
+        ]
+        result = answer_question("How is encryption and tls handled?", snippets, date(2026, 6, 1), templates)
+        self.assertEqual(result["template_category"], "encryption")
+        self.assertIn("Draft answer based on approved evidence for Encryption", result["answer"])
+
+    def test_no_template_without_templates_param(self):
+        snippets = [
+            make_snippet(evidence_id="encryption", snippet="TLS is used for encryption."),
+        ]
+        result = answer_question("encryption", snippets, date(2026, 6, 1))
+        self.assertIsNone(result["template_category"])
 
 
 class TestBuildResults(unittest.TestCase):
@@ -570,6 +720,76 @@ class TestRenderMarkdown(unittest.TestCase):
         md = render_markdown(results)
         self.assertIn("No matching evidence found.", md)
         self.assertIn("No citations available.", md)
+
+
+class TestExportCSV(unittest.TestCase):
+    def test_basic_export(self):
+        results = {
+            "generated_at": "2026-06-01T12:00:00",
+            "as_of_date": "2026-06-01",
+            "summary": {"questions_processed": 1, "confidence_counts": {"high": 1}, "human_reviews_required": 0},
+            "answers": [
+                {
+                    "question": "How is encryption handled?",
+                    "answer": "Draft answer: Data is encrypted. [S1:encryption]",
+                    "confidence": "high",
+                    "needs_human_review": False,
+                    "template_category": "encryption",
+                    "citations": [{"citation": "S1:encryption"}],
+                    "freshness": [{"source": "encryption", "status": "fresh"}],
+                }
+            ],
+        }
+        csv_output = export_csv(results)
+        self.assertIn("Question", csv_output)
+        self.assertIn("How is encryption handled?", csv_output)
+        self.assertIn("high", csv_output)
+        self.assertIn("S1:encryption", csv_output)
+        self.assertIn("encryption: fresh", csv_output)
+
+    def test_empty_answers(self):
+        results = {
+            "generated_at": "2026-06-01T12:00:00",
+            "as_of_date": "2026-06-01",
+            "summary": {"questions_processed": 0, "confidence_counts": {}, "human_reviews_required": 0},
+            "answers": [],
+        }
+        csv_output = export_csv(results)
+        self.assertIn("Question", csv_output)
+        self.assertEqual(len(csv_output.strip().splitlines()), 1)
+
+    def test_multiple_answers(self):
+        results = {
+            "generated_at": "2026-06-01T12:00:00",
+            "as_of_date": "2026-06-01",
+            "summary": {"questions_processed": 2, "confidence_counts": {"high": 1, "low": 1}, "human_reviews_required": 1},
+            "answers": [
+                {
+                    "question": "Q1?",
+                    "answer": "A1",
+                    "confidence": "high",
+                    "needs_human_review": False,
+                    "template_category": "encryption",
+                    "citations": [{"citation": "S1:encryption"}],
+                    "freshness": [{"source": "encryption", "status": "fresh"}],
+                },
+                {
+                    "question": "Q2?",
+                    "answer": "A2",
+                    "confidence": "low",
+                    "needs_human_review": True,
+                    "template_category": None,
+                    "citations": [],
+                    "freshness": [],
+                },
+            ],
+        }
+        csv_output = export_csv(results)
+        lines = csv_output.strip().splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertIn("Q1?", lines[1])
+        self.assertIn("Q2?", lines[2])
+        self.assertIn("encryption", lines[1])
 
 
 class TestLoadEvidence(unittest.TestCase):

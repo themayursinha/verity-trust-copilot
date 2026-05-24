@@ -313,11 +313,7 @@ def score_snippet(
 
 def retrieve(question: str, snippets: list[EvidenceSnippet], as_of: date) -> list[Match]:
     idf, avgdl = compute_idf(snippets)
-    matches = [
-        match
-        for snippet in snippets
-        if (match := score_snippet(question, snippet, as_of, idf, avgdl))
-    ]
+    matches = [match for snippet in snippets if (match := score_snippet(question, snippet, as_of, idf, avgdl))]
     matches.sort(key=lambda match: match.score, reverse=True)
     if not matches:
         return []
@@ -362,9 +358,7 @@ def citation_id(match: Match, index: int) -> str:
     return f"S{index}:{match.snippet.evidence_id}"
 
 
-def generate_answer(
-    question: str, matches: list[Match], level: str, template: AnswerTemplate | None = None
-) -> str:
+def generate_answer(question: str, matches: list[Match], level: str, template: AnswerTemplate | None = None) -> str:
     if not matches:
         return (
             "Needs human review. I could not find approved evidence that supports an answer to this question. "
@@ -539,31 +533,33 @@ def build_results(
 def export_csv(results: dict[str, Any]) -> str:
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "Question",
-        "Answer",
-        "Confidence",
-        "Needs Human Review",
-        "Template Category",
-        "Sources",
-        "Source Count",
-        "Freshness Status",
-    ])
+    writer.writerow(
+        [
+            "Question",
+            "Answer",
+            "Confidence",
+            "Needs Human Review",
+            "Template Category",
+            "Sources",
+            "Source Count",
+            "Freshness Status",
+        ]
+    )
     for answer in results["answers"]:
         sources = "; ".join(c["citation"] for c in answer.get("citations", []))
-        freshness = "; ".join(
-            f"{f['source']}: {f['status']}" for f in answer.get("freshness", [])
+        freshness = "; ".join(f"{f['source']}: {f['status']}" for f in answer.get("freshness", []))
+        writer.writerow(
+            [
+                answer.get("question", ""),
+                answer.get("answer", ""),
+                answer.get("confidence", ""),
+                str(answer.get("needs_human_review", False)),
+                answer.get("template_category", ""),
+                sources,
+                len(answer.get("citations", [])),
+                freshness,
+            ]
         )
-        writer.writerow([
-            answer.get("question", ""),
-            answer.get("answer", ""),
-            answer.get("confidence", ""),
-            str(answer.get("needs_human_review", False)),
-            answer.get("template_category", ""),
-            sources,
-            len(answer.get("citations", [])),
-            freshness,
-        ])
     return output.getvalue()
 
 

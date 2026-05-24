@@ -151,12 +151,16 @@ class TestMatchTemplate(unittest.TestCase):
     def setUp(self):
         self.templates = [
             AnswerTemplate(
-                category="encryption", keywords=["encrypt", "encryption", "tls", "at-rest"],
-                label="Encryption", intro="Encryption controls.",
+                category="encryption",
+                keywords=["encrypt", "encryption", "tls", "at-rest"],
+                label="Encryption",
+                intro="Encryption controls.",
             ),
             AnswerTemplate(
-                category="access-control", keywords=["access", "sso", "mfa", "offboarding"],
-                label="Access Control", intro="Access controls.",
+                category="access-control",
+                keywords=["access", "sso", "mfa", "offboarding"],
+                label="Access Control",
+                intro="Access controls.",
             ),
         ]
 

@@ -271,6 +271,7 @@ class TestApprovalPersistence(unittest.TestCase):
 
     def test_approval_round_trip(self):
         import web_app
+
         original = web_app.APPROVALS_PATH
         web_app.APPROVALS_PATH = self.approvals_path
         try:
@@ -294,6 +295,7 @@ class TestApprovalPersistence(unittest.TestCase):
 
     def test_load_empty_missing_file(self):
         import web_app
+
         original = web_app.APPROVALS_PATH
         path = self.tmpdir / "nonexistent.json"
         web_app.APPROVALS_PATH = path
@@ -305,6 +307,7 @@ class TestApprovalPersistence(unittest.TestCase):
 
     def test_set_approval_validates_question(self):
         import web_app
+
         handler = web_app.CopilotHandler
         handler.APPROVALS_PATH = self.approvals_path
         with self.assertRaises(ValueError):
@@ -312,6 +315,7 @@ class TestApprovalPersistence(unittest.TestCase):
 
     def test_set_approval_validates_status(self):
         import web_app
+
         handler = web_app.CopilotHandler
         with self.assertRaises(ValueError):
             handler.set_approval(None, {"question": "Q?", "status": "invalid"})

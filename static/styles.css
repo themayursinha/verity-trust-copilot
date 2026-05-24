@@ -644,6 +644,107 @@ textarea:focus-visible {
   font-size: 12px;
 }
 
+.approval-section {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+}
+
+.approval-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.approval-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.approval-notes {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f6f8f5;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.approval-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.approval-btn {
+  min-height: 36px;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.approval-btn:hover {
+  border-color: #b9c5ca;
+}
+
+.approve-btn {
+  border-color: #2f7d32;
+  color: #2f7d32;
+}
+
+.approve-btn:hover {
+  background: #e7f4e8;
+}
+
+.reject-btn {
+  border-color: #b42318;
+  color: #b42318;
+}
+
+.reject-btn:hover {
+  background: #fde8e6;
+}
+
+.reset-btn {
+  color: var(--muted);
+}
+
+.approval-form {
+  display: grid;
+  gap: 8px;
+}
+
+.approval-form input,
+.approval-form textarea {
+  min-height: 36px;
+  font-size: 13px;
+}
+
+.approval-form textarea {
+  min-height: 60px;
+}
+
+.meta-chip.approved-chip {
+  border-color: #2f7d32;
+  background: #e7f4e8;
+  color: #2f7d32;
+}
+
+.meta-chip.rejected-chip {
+  border-color: #b42318;
+  background: #fde8e6;
+  color: #b42318;
+}
+
 @media (max-width: 1080px) {
   .workspace {
     grid-template-columns: 220px minmax(0, 1fr);

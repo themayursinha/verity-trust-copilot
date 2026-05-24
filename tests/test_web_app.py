@@ -1,4 +1,6 @@
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -261,6 +263,59 @@ class TestRenderCustomerReadyMarkdown(unittest.TestCase):
         md = render_customer_ready_markdown(answer)
         self.assertIn("No sources found.", md)
         self.assertIn("No freshness checks available.", md)
+
+
+class TestApprovalPersistence(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.approvals_path = self.tmpdir / "approvals.json"
+
+    def test_approval_round_trip(self):
+        import web_app
+        original = web_app.APPROVALS_PATH
+        web_app.APPROVALS_PATH = self.approvals_path
+        try:
+            approvals = web_app.load_approvals()
+            self.assertEqual(approvals, {})
+            approval_data = {
+                "How is encryption handled?": {
+                    "status": "approved",
+                    "reviewer": "Alice",
+                    "reviewed_at": "2026-05-24T12:00:00",
+                    "notes": "Looks good.",
+                }
+            }
+            web_app.save_approvals(approval_data)
+            loaded = web_app.load_approvals()
+            self.assertEqual(loaded, approval_data)
+            self.assertEqual(loaded["How is encryption handled?"]["status"], "approved")
+            self.assertEqual(loaded["How is encryption handled?"]["reviewer"], "Alice")
+        finally:
+            web_app.APPROVALS_PATH = original
+
+    def test_load_empty_missing_file(self):
+        import web_app
+        original = web_app.APPROVALS_PATH
+        path = self.tmpdir / "nonexistent.json"
+        web_app.APPROVALS_PATH = path
+        try:
+            approvals = web_app.load_approvals()
+            self.assertEqual(approvals, {})
+        finally:
+            web_app.APPROVALS_PATH = original
+
+    def test_set_approval_validates_question(self):
+        import web_app
+        handler = web_app.CopilotHandler
+        handler.APPROVALS_PATH = self.approvals_path
+        with self.assertRaises(ValueError):
+            handler.set_approval(None, {})
+
+    def test_set_approval_validates_status(self):
+        import web_app
+        handler = web_app.CopilotHandler
+        with self.assertRaises(ValueError):
+            handler.set_approval(None, {"question": "Q?", "status": "invalid"})
 
 
 if __name__ == "__main__":

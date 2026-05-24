@@ -27,6 +27,7 @@ STATIC_DIR = ROOT / "static"
 EVIDENCE_PATH = ROOT / "evidence" / "evidence.json"
 QUESTIONS_PATH = ROOT / "data" / "questions.json"
 OUTPUT_DIR = ROOT / "outputs"
+APPROVALS_PATH = OUTPUT_DIR / "approvals.json"
 CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -85,6 +86,17 @@ def normalize_evidence_record(record: dict[str, Any]) -> dict[str, Any]:
 
 def save_evidence_records(records: list[dict[str, Any]]) -> None:
     EVIDENCE_PATH.write_text(json.dumps(records, indent=2), encoding="utf-8")
+
+
+def load_approvals() -> dict[str, Any]:
+    if not APPROVALS_PATH.exists():
+        return {}
+    return json.loads(APPROVALS_PATH.read_text(encoding="utf-8"))
+
+
+def save_approvals(approvals: dict[str, Any]) -> None:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    APPROVALS_PATH.write_text(json.dumps(approvals, indent=2), encoding="utf-8")
 
 
 def render_customer_ready_markdown(answer: dict[str, Any]) -> str:
@@ -154,6 +166,9 @@ class CopilotHandler(BaseHTTPRequestHandler):
         if path == "/api/evidence":
             self.send_json({"evidence": load_evidence_records()})
             return
+        if path == "/api/approvals":
+            self.send_json({"approvals": load_approvals()})
+            return
         if path.startswith("/static/"):
             requested = (STATIC_DIR / path.removeprefix("/static/")).resolve()
             if STATIC_DIR in requested.parents or requested == STATIC_DIR:
@@ -181,6 +196,10 @@ class CopilotHandler(BaseHTTPRequestHandler):
 
             if path == "/api/export/json":
                 self.export_json_answer(payload)
+                return
+
+            if path == "/api/approval":
+                self.set_approval(payload)
                 return
 
             if path != "/api/answer":
@@ -281,6 +300,23 @@ class CopilotHandler(BaseHTTPRequestHandler):
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         export_path.write_text(json_content, encoding="utf-8")
         self.send_json({"path": str(export_path), "json": json_content})
+
+    def set_approval(self, payload: dict[str, Any]) -> None:
+        question = payload.get("question")
+        if not isinstance(question, str) or not question.strip():
+            raise ValueError("Send a non-empty 'question' string.")
+        status = payload.get("status", "unreviewed")
+        if status not in ("unreviewed", "approved", "rejected"):
+            raise ValueError("Status must be 'approved', 'rejected', or 'unreviewed'.")
+        approvals = load_approvals()
+        approvals[question.strip()] = {
+            "status": status,
+            "reviewer": str(payload.get("reviewer", "")).strip(),
+            "reviewed_at": datetime.now().isoformat(timespec="seconds"),
+            "notes": str(payload.get("notes", "")).strip(),
+        }
+        save_approvals(approvals)
+        self.send_json({"question": question.strip(), **approvals[question.strip()]})
 
     def serve_file(self, path: Path) -> None:
         if not path.exists() or not path.is_file():

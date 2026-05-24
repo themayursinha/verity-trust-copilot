@@ -27,6 +27,7 @@ const evidenceSnippets = document.querySelector("#evidenceSnippets");
 let answers = [];
 let selectedIndex = 0;
 let evidenceRecords = [];
+let approvals = {};
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -187,10 +188,14 @@ function renderDetail() {
     <div class="source-list">
       ${renderSources(answer.citations)}
     </div>
+    ${renderApproval(answer)}
   `;
   document.querySelector("#exportMarkdownBtn").addEventListener("click", () => exportMarkdown(answer));
   document.querySelector("#exportCSVBtn").addEventListener("click", () => exportCSV(answer));
   document.querySelector("#exportJSONBtn").addEventListener("click", () => exportStructuredJSON(answer));
+  document.querySelector("#approveBtn")?.addEventListener("click", () => setApproval(answer, "approved"));
+  document.querySelector("#rejectBtn")?.addEventListener("click", () => setApproval(answer, "rejected"));
+  document.querySelector("#resetApprovalBtn")?.addEventListener("click", () => setApproval(answer, "unreviewed"));
 }
 
 function renderFreshness(items) {
@@ -229,6 +234,70 @@ function renderSources(citations) {
     .join("");
 }
 
+function renderApproval(answer) {
+  const question = answer.question;
+  const app = approvals[question] || { status: "unreviewed", reviewer: "", notes: "", reviewed_at: null };
+  const statusLabels = { unreviewed: "Unreviewed", approved: "Approved", rejected: "Rejected" };
+  const statusClass = app.status === "unreviewed" ? "meta-chip" : `meta-chip ${app.status}-chip`;
+  const reviewerInfo = app.reviewer
+    ? `<p class="approval-meta">Reviewed by ${escapeHtml(app.reviewer)}${app.reviewed_at ? " at " + escapeHtml(app.reviewed_at) : ""}</p>`
+    : "";
+  const notesHtml = app.notes
+    ? `<p class="approval-notes">${escapeHtml(app.notes)}</p>`
+    : "";
+  return `
+    <div class="section-title">Review Status</div>
+    <div class="approval-section">
+      <div class="approval-status">
+        <span class="${statusClass}">${statusLabels[app.status] || "Unreviewed"}</span>
+        ${reviewerInfo}
+      </div>
+      ${notesHtml}
+      <div class="approval-actions">
+        <button id="approveBtn" class="approval-btn approve-btn" type="button">Approve</button>
+        <button id="rejectBtn" class="approval-btn reject-btn" type="button">Reject</button>
+        <button id="resetApprovalBtn" class="approval-btn reset-btn" type="button">Reset</button>
+      </div>
+      <div class="approval-form">
+        <input id="reviewerName" type="text" placeholder="Reviewer name" value="${escapeHtml(app.reviewer)}">
+        <textarea id="reviewerNotes" placeholder="Review notes (optional)">${escapeHtml(app.notes)}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+async function setApproval(answer, status) {
+  const question = answer.question;
+  const reviewer = document.querySelector("#reviewerName")?.value?.trim() || "";
+  const notes = document.querySelector("#reviewerNotes")?.value?.trim() || "";
+  try {
+    const response = await fetch("/api/approval", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, status, reviewer, notes }),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Unable to update approval.");
+    }
+    approvals[question] = payload;
+    renderDetail();
+    setStatus(`Answer ${status}.`, "success");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+}
+
+async function loadApprovals() {
+  try {
+    const response = await fetch("/api/approvals");
+    const payload = await response.json();
+    approvals = payload.approvals || {};
+  } catch {
+    approvals = {};
+  }
+}
+
 async function loadSample() {
   setStatus("Loading sample questions...");
   const response = await fetch("/api/sample");
@@ -265,6 +334,7 @@ async function generateDrafts() {
     answers = payload.answers;
     selectedIndex = 0;
     updateMetrics(payload);
+    await loadApprovals();
     renderResults();
     renderDetail();
     setStatus(`Generated ${payload.summary.questions_processed} draft answers. Outputs were written to outputs/.`, "success");

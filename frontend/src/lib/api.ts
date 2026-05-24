@@ -308,6 +308,13 @@ export async function updateBranding(data: {
   return response.data;
 }
 
+export async function downloadAuditPackage(): Promise<Blob> {
+  const response = await api.get("/api/v1/reports/audit-package", {
+    responseType: "blob",
+  });
+  return response.data;
+}
+
 export async function getSoc2Report(): Promise<{
   format: string;
   report: string;

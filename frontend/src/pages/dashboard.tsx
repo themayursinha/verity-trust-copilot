@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboard, getSoc2Report } from "@/lib/api";
+import { getDashboard, getSoc2Report, downloadAuditPackage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, Download, FileText, Loader2, ShieldCheck, BugPlay, ScrollText } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Download, FileText, Loader2, ShieldCheck, BugPlay, ScrollText, Package } from "lucide-react";
 
 function DashboardSkeleton() {
   return (
@@ -54,6 +54,7 @@ const formatFrameworkId = (id: string) => {
 
 export function DashboardPage() {
   const [exportingReport, setExportingReport] = useState(false);
+  const [exportingAudit, setExportingAudit] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["dashboard"],
@@ -75,6 +76,22 @@ export function DashboardPage() {
     } catch {
     } finally {
       setExportingReport(false);
+    }
+  };
+
+  const handleDownloadAudit = async () => {
+    setExportingAudit(true);
+    try {
+      const blob = await downloadAuditPackage();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audit-package-${new Date().toISOString().split("T")[0]}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+    } finally {
+      setExportingAudit(false);
     }
   };
 
@@ -104,14 +121,24 @@ export function DashboardPage() {
               Overview of your security compliance posture
             </p>
           </div>
-          <Button variant="outline" onClick={handleExportReport} disabled={exportingReport}>
-            {exportingReport ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
-            {exportingReport ? "Generating..." : "Export SOC 2 Report"}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportReport} disabled={exportingReport || exportingAudit}>
+              {exportingReport ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              {exportingReport ? "Generating..." : "Export SOC 2 Report"}
+            </Button>
+            <Button variant="outline" onClick={handleDownloadAudit} disabled={exportingAudit || exportingReport}>
+              {exportingAudit ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Package className="mr-2 h-4 w-4" />
+              )}
+              {exportingAudit ? "Packaging..." : "Audit Package"}
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 const EvidenceQuality = require("./evidence_quality.js");
@@ -72,4 +73,28 @@ test("buildEvidenceQuality treats outdated freshness as danger even with citatio
   assert.equal(quality.sources.label, "2 sources");
   assert.equal(quality.freshness.label, "Outdated evidence");
   assert.equal(quality.freshness.className, "quality-danger");
+});
+
+
+test("editable list rendering does not embed raw JSON in edit attributes", () => {
+  const policySource = readFileSync(new URL("./policies.js", import.meta.url), "utf8");
+  const pentestSource = readFileSync(new URL("./pentests.js", import.meta.url), "utf8");
+
+  assert.doesNotMatch(policySource, /data-edit='\$\{JSON\.stringify/);
+  assert.doesNotMatch(policySource, /JSON\.stringify\(p\)/);
+  assert.match(policySource, /policiesById = new Map/);
+  assert.match(policySource, /data-edit-id/);
+
+  assert.doesNotMatch(pentestSource, /data-edit=.*JSON\.stringify/);
+  assert.doesNotMatch(pentestSource, /JSON\.stringify\(p\)/);
+  assert.match(pentestSource, /pentestsById = new Map/);
+  assert.match(pentestSource, /data-edit-id/);
+});
+
+test("mock Vanta UI does not request API keys", () => {
+  const source = readFileSync(new URL("./dashboard.js", import.meta.url), "utf8");
+
+  assert.doesNotMatch(source, /vantaApiKey/);
+  assert.doesNotMatch(source, /Vanta API Key/);
+  assert.match(source, /Mock Vanta import/);
 });

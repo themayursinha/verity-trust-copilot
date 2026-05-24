@@ -108,12 +108,11 @@
     const container = document.getElementById('dashVanta');
     if (!config || !config.connected) {
       container.innerHTML = '<div class="vanta-disconnected">' +
-        '<p style="margin:0 0 10px;color:var(--muted)">Not connected to Vanta. Evidence can be imported automatically from your Vanta workspace.</p>' +
-        '<button id="vantaConnectBtn" class="button-primary">Connect Vanta</button>' +
+        '<p style="margin:0 0 10px;color:var(--muted)">Mock Vanta import has not run. It adds demo evidence locally and does not call the Vanta API.</p>' +
+        '<button id="vantaConnectBtn" class="button-primary">Configure Mock Import</button>' +
         '<div id="vantaConnectForm" style="display:none;margin-top:10px">' +
-          '<input type="text" id="vantaApiKey" placeholder="Vanta API Key" style="margin-bottom:8px">' +
-          '<input type="text" id="vantaOrgId" placeholder="Organization ID" style="margin-bottom:8px">' +
-          '<button id="vantaSyncBtn" class="button-primary">Sync Evidence</button>' +
+          '<input type="text" id="vantaOrgId" placeholder="Demo organization ID" style="margin-bottom:8px">' +
+          '<button id="vantaSyncBtn" class="button-primary">Import Mock Evidence</button>' +
         '</div>' +
       '</div>';
       const connectBtn = document.getElementById('vantaConnectBtn');
@@ -130,11 +129,11 @@
     container.innerHTML = '<div class="vanta-connected">' +
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
         '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2f7d32"></span>' +
-        '<strong>Connected</strong>' +
+        '<strong>Mock import configured</strong>' +
       '</div>' +
       '<p style="margin:0 0 4px;font-size:13px;color:var(--muted)">Last sync: ' + escapeHtml(lastSync) + '</p>' +
       '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Org: ' + escapeHtml(config.organization_id || '—') + '</p>' +
-      '<button id="vantaSyncBtn" class="button-primary">Resync Evidence</button>' +
+      '<button id="vantaSyncBtn" class="button-primary">Reimport Mock Evidence</button>' +
     '</div>';
     document.getElementById('vantaSyncBtn').addEventListener('click', vantaSync);
   }
@@ -142,20 +141,19 @@
   async function vantaSync() {
     const btn = document.getElementById('vantaSyncBtn');
     if (btn) btn.disabled = true;
-    const apiKey = document.getElementById('vantaApiKey') ? document.getElementById('vantaApiKey').value : '';
     const orgId = document.getElementById('vantaOrgId') ? document.getElementById('vantaOrgId').value : '';
     try {
       const resp = await fetch('/api/vanta/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: apiKey, organization_id: orgId })
+        body: JSON.stringify({ organization_id: orgId })
       });
       if (!resp.ok) throw new Error('Sync failed');
       const result = await resp.json();
-      alert('Vanta sync complete: ' + result.synced_count + ' evidence records imported.');
+      alert('Mock Vanta import complete: ' + result.synced_count + ' evidence records imported.');
       loadOverview();
     } catch (e) {
-      alert('Vanta sync error: ' + e.message);
+      alert('Mock Vanta import error: ' + e.message);
     } finally {
       if (btn) btn.disabled = false;
     }

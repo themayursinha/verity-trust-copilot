@@ -17,6 +17,7 @@
   const btnCloseModal = document.getElementById('btnCloseModal');
   const btnCancelModal = document.getElementById('btnCancelModal');
   const btnNewPolicy = document.getElementById('btnNewPolicy');
+  let policiesById = new Map();
 
   async function loadPolicies() {
     try {
@@ -27,9 +28,11 @@
         policyList.innerHTML = '<div class="dash-empty">No policies yet. Create your first policy above.</div>';
         return;
       }
+      policiesById = new Map(policies.map(p => [String(p.id), p]));
       const html = policies.map(p => {
         const statusClass = p.status === 'active' ? 'badge-active' : 'badge-draft';
         const reviewDate = p.next_review ? new Date(p.next_review).toLocaleDateString() : 'Not set';
+        const id = escapeHtml(p.id);
         return `<div class="policy-card">
           <div class="policy-card-header">
             <strong>${escapeHtml(p.title)}</strong>
@@ -37,19 +40,22 @@
           </div>
           <div class="policy-card-meta">
             <span>Category: ${escapeHtml(p.category)}</span>
-            <span>Version: ${p.version}</span>
-            <span>Next review: ${reviewDate}</span>
+            <span>Version: ${escapeHtml(p.version)}</span>
+            <span>Next review: ${escapeHtml(reviewDate)}</span>
           </div>
           <div class="policy-card-actions">
-            <button class="ghost-button" data-edit='${JSON.stringify(p)}'>Edit</button>
-            <button class="ghost-button ghost-danger" data-id="${p.id}">Delete</button>
+            <button class="ghost-button" data-edit-id="${id}">Edit</button>
+            <button class="ghost-button ghost-danger" data-id="${id}">Delete</button>
           </div>
         </div>`;
       }).join('');
       policyList.innerHTML = html;
 
-      policyList.querySelectorAll('[data-edit]').forEach(btn => {
-        btn.addEventListener('click', () => openEditModal(JSON.parse(btn.dataset.edit)));
+      policyList.querySelectorAll('[data-edit-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const policy = policiesById.get(String(btn.dataset.editId));
+          if (policy) openEditModal(policy);
+        });
       });
       policyList.querySelectorAll('.ghost-danger').forEach(btn => {
         btn.addEventListener('click', () => deletePolicy(btn.dataset.id));

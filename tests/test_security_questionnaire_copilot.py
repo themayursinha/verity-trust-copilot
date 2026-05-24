@@ -18,6 +18,7 @@ from security_questionnaire_copilot import (
     build_results,
     confidence,
     expand_terms,
+    evaluate_claim_checks,
     export_csv,
     freshness_status,
     generate_answer,
@@ -413,6 +414,68 @@ class TestConfidence(unittest.TestCase):
         ]
         level, _ = confidence(matches)
         self.assertEqual(level, "medium")
+
+
+class TestClaimChecks(unittest.TestCase):
+    def test_fedramp_negative_evidence_requires_review(self):
+        snippets = [
+            make_snippet(
+                evidence_id="unsupported-fedramp",
+                title="Unsupported Claims Register",
+                snippet="Jamie does not currently have approved evidence to claim FedRAMP authorization.",
+                summary="Tracks claims Jamie must not make because there is no approved evidence.",
+                last_reviewed=date(2026, 5, 1),
+            )
+        ]
+        result = answer_question("Are you FedRAMP authorized?", snippets, date(2026, 6, 1))
+
+        self.assertEqual(result["confidence"], "low")
+        self.assertTrue(result["needs_human_review"])
+        self.assertEqual(result["claim_checks"][0]["category"], "fedramp")
+        self.assertEqual(result["claim_checks"][0]["status"], "review_required")
+
+    def test_hipaa_without_support_requires_review(self):
+        snippets = [
+            make_snippet(
+                evidence_id="privacy",
+                title="Privacy Program",
+                snippet="Jamie processes customer data under documented privacy controls.",
+                summary="Privacy controls are documented.",
+                last_reviewed=date(2026, 5, 1),
+            )
+        ]
+
+        result = answer_question("Are you HIPAA compliant?", snippets, date(2026, 6, 1))
+
+        self.assertEqual(result["confidence"], "low")
+        self.assertTrue(result["needs_human_review"])
+        self.assertEqual(result["claim_checks"][0]["category"], "hipaa")
+
+    def test_iso_certified_question_with_alignment_only_requires_review(self):
+        snippets = [
+            make_snippet(
+                evidence_id="iso-27001-isms",
+                title="ISO 27001 Information Security Management System",
+                frameworks=["ISO 27001"],
+                snippet="Jamie operates an ISO 27001-aligned ISMS.",
+                summary="Jamie maintains an ISO 27001-aligned information security management system.",
+                last_reviewed=date(2026, 5, 1),
+            )
+        ]
+
+        result = answer_question("Are you ISO 27001 certified?", snippets, date(2026, 6, 1))
+
+        self.assertEqual(result["confidence"], "low")
+        self.assertTrue(result["needs_human_review"])
+        categories = {check["category"] for check in result["claim_checks"]}
+        self.assertIn("iso-27001-certification", categories)
+
+    def test_customer_specific_commitment_requires_review(self):
+        matches = []
+        checks = evaluate_claim_checks("Can you commit to our custom SLA in the contract?", matches)
+
+        self.assertEqual(checks[0]["category"], "customer-specific-commitment")
+        self.assertEqual(checks[0]["status"], "review_required")
 
 
 class TestGenerateAnswer(unittest.TestCase):

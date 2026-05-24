@@ -98,15 +98,26 @@ def load_vanta_config() -> dict[str, Any]:
         return {
             "connected": False,
             "api_key_configured": False,
+            "integration_mode": "mock",
             "organization_id": "",
             "last_sync": None,
         }
-    return json.loads(VANTA_CONFIG_PATH.read_text(encoding="utf-8"))
+    config = json.loads(VANTA_CONFIG_PATH.read_text(encoding="utf-8"))
+    config.pop("api_key", None)
+    config.pop("token", None)
+    config["api_key_configured"] = False
+    config["integration_mode"] = "mock"
+    return config
 
 
 def save_vanta_config(config: dict[str, Any]) -> None:
+    safe_config = dict(config)
+    safe_config.pop("api_key", None)
+    safe_config.pop("token", None)
+    safe_config["api_key_configured"] = False
+    safe_config["integration_mode"] = "mock"
     VANTA_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    VANTA_CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding="utf-8")
+    VANTA_CONFIG_PATH.write_text(json.dumps(safe_config, indent=2), encoding="utf-8")
 
 
 def load_pentests() -> list[dict[str, Any]]:
@@ -746,18 +757,16 @@ class CopilotHandler(BaseHTTPRequestHandler):
 
     def vanta_sync(self, payload: dict[str, Any]) -> None:
         vanta_config = load_vanta_config()
-        api_key = payload.get("api_key", "").strip()
-        org_id = payload.get("organization_id", "").strip()
+        org_id = str(payload.get("organization_id", "")).strip()
 
-        if api_key:
-            vanta_config["api_key_configured"] = True
-            vanta_config["connected"] = True
         if org_id:
             vanta_config["organization_id"] = org_id
 
         now_str = datetime.now().isoformat(timespec="seconds")
         vanta_config["last_sync"] = now_str
         vanta_config["connected"] = True
+        vanta_config["api_key_configured"] = False
+        vanta_config["integration_mode"] = "mock"
         save_vanta_config(vanta_config)
 
         evidence = load_evidence_records()
@@ -766,36 +775,36 @@ class CopilotHandler(BaseHTTPRequestHandler):
         mock_records = [
             {
                 "id": "vanta-device-compliance",
-                "title": "Vanta Device Compliance Check",
+                "title": "Mock Vanta Device Compliance Check",
                 "type": "control-evidence",
                 "frameworks": ["SOC 2", "ISO 27001"],
                 "control_ids": ["CC6.1", "A.8.8"],
                 "last_reviewed": now_str[:10],
                 "owner": "Security",
-                "summary": "Vanta automated check: device encryption, MFA, screen lock, antivirus, OS patch level.",
-                "snippets": ["Vanta monitors device compliance across all employee laptops."],
+                "summary": "Mock Vanta import: device encryption, MFA, screen lock, antivirus, OS patch level.",
+                "snippets": ["Mock Vanta import monitors device compliance across all employee laptops."],
             },
             {
                 "id": "vanta-access-review",
-                "title": "Vanta Quarterly Access Review",
+                "title": "Mock Vanta Quarterly Access Review",
                 "type": "control-evidence",
                 "frameworks": ["SOC 2", "ISO 27001"],
                 "control_ids": ["CC6.2", "A.5.15"],
                 "last_reviewed": now_str[:10],
                 "owner": "IT",
-                "summary": "Vanta tracked quarterly access review for production, identity, and admin systems.",
-                "snippets": ["Quarterly access reviews completed and tracked in Vanta."],
+                "summary": "Mock Vanta import for quarterly access review of production, identity, and admin systems.",
+                "snippets": ["Mock Vanta import shows quarterly access reviews for production and admin systems."],
             },
             {
                 "id": "vanta-security-training",
-                "title": "Vanta Security Training Report",
+                "title": "Mock Vanta Security Training Report",
                 "type": "control-evidence",
                 "frameworks": ["SOC 2", "ISO 27001"],
                 "control_ids": ["CC1.2", "A.6.3"],
                 "last_reviewed": now_str[:10],
                 "owner": "Security",
-                "summary": "Employee security training completion status from Vanta.",
-                "snippets": ["Security training completion tracked via Vanta for all employees."],
+                "summary": "Mock Vanta import for employee security training completion status.",
+                "snippets": ["Mock Vanta import tracks security training completion for all employees."],
             },
         ]
         for record in mock_records:
@@ -805,10 +814,11 @@ class CopilotHandler(BaseHTTPRequestHandler):
                 synced.append(record["title"])
 
         save_evidence_records(evidence)
-        append_activity("Vanta sync completed", f"Imported {len(synced)} evidence records")
+        append_activity("Mock Vanta import completed", f"Imported {len(synced)} evidence records")
         self.send_json(
             {
-                "status": "success",
+                "status": "mock_success",
+                "message": "Mock Vanta import completed. No external Vanta API was called and no API key was stored.",
                 "synced_count": len(synced),
                 "synced_titles": synced,
                 "last_sync": now_str,

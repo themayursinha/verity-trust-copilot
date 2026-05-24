@@ -23,6 +23,14 @@ FRESH_DAYS = 180
 STALE_DAYS = 365
 MAX_MATCHES = 4
 
+UNSUPPORTED_CLAIM_TERMS = {
+    "fedramp": "FedRAMP authorization",
+    "hipaa": "HIPAA compliance",
+}
+
+CERTIFICATION_TERMS = {"certified", "certification", "certificate", "certifications", "attestation", "attested"}
+ISO_TERMS = {"iso", "27001", "iso-27001"}
+
 STOPWORDS = {
     "a",
     "about",
@@ -354,6 +362,96 @@ def confidence(matches: list[Match]) -> tuple[str, str]:
     return "low", "Evidence is weak, outdated, or too narrow for a supported customer-facing answer."
 
 
+def _match_text(match: Match) -> str:
+    snippet = match.snippet
+    return " ".join(
+        [
+            snippet.title,
+            snippet.evidence_type,
+            " ".join(snippet.frameworks),
+            " ".join(snippet.control_ids),
+            snippet.summary,
+            snippet.snippet,
+        ]
+    ).lower()
+
+
+def evaluate_claim_checks(question: str, matches: list[Match]) -> list[dict[str, Any]]:
+    """Flag claim categories that need explicit human review before customer use."""
+    q_tokens = set(tokenize(question))
+    q_lower = question.lower()
+    checks: list[dict[str, Any]] = []
+    match_texts = [_match_text(match) for match in matches]
+    combined = " ".join(match_texts)
+
+    for term, label in UNSUPPORTED_CLAIM_TERMS.items():
+        if term not in q_lower:
+            continue
+        unsupported_marker = f"does not currently have approved evidence to claim {term}" in combined
+        has_direct_support = any(
+            term in text and "does not currently have approved evidence" not in text and "unsupported" not in text
+            for text in match_texts
+        )
+        if unsupported_marker or not has_direct_support:
+            checks.append(
+                {
+                    "category": term,
+                    "status": "review_required",
+                    "reason": f"No approved evidence supports claiming {label}.",
+                }
+            )
+        else:
+            checks.append(
+                {
+                    "category": term,
+                    "status": "supported",
+                    "reason": f"Retrieved evidence appears to support {label}.",
+                }
+            )
+
+    asks_iso_certification = bool(q_tokens & ISO_TERMS) and bool(q_tokens & CERTIFICATION_TERMS)
+    if asks_iso_certification:
+        has_certification_support = any(
+            ("certified" in text or "certificate" in text or "independently audited" in text) and "aligned" not in text
+            for text in match_texts
+        )
+        has_alignment_only = "aligned" in combined and not has_certification_support
+        if has_alignment_only or not has_certification_support:
+            checks.append(
+                {
+                    "category": "iso-27001-certification",
+                    "status": "review_required",
+                    "reason": (
+                        "The question asks for ISO 27001 certification, but retrieved evidence does not explicitly "
+                        "support a certification claim."
+                    ),
+                }
+            )
+        else:
+            checks.append(
+                {
+                    "category": "iso-27001-certification",
+                    "status": "supported",
+                    "reason": "Retrieved evidence explicitly supports the ISO 27001 certification claim.",
+                }
+            )
+
+    customer_specific_terms = {"contract", "contractual", "sla", "custom", "customer-specific", "region", "regional"}
+    if q_tokens & customer_specific_terms:
+        checks.append(
+            {
+                "category": "customer-specific-commitment",
+                "status": "review_required",
+                "reason": (
+                    "Customer-specific contractual, SLA, or regional commitments require human review against "
+                    "the governing agreement."
+                ),
+            }
+        )
+
+    return checks
+
+
 def citation_id(match: Match, index: int) -> str:
     return f"S{index}:{match.snippet.evidence_id}"
 
@@ -392,6 +490,13 @@ def answer_question(
 ) -> dict[str, Any]:
     matches = retrieve(question, snippets, as_of)
     level, rationale = confidence(matches)
+    claim_checks = evaluate_claim_checks(question, matches)
+    blocking_checks = [check for check in claim_checks if check["status"] == "review_required"]
+    if blocking_checks:
+        level = "low"
+        rationale = "Human review required for high-risk claim checks: " + "; ".join(
+            check["reason"] for check in blocking_checks
+        )
     needs_review = level == "low"
     matched_template = match_template(question, templates) if templates else None
     return {
@@ -399,6 +504,7 @@ def answer_question(
         "answer": generate_answer(question, matches, level, matched_template),
         "confidence": level,
         "needs_human_review": needs_review,
+        "claim_checks": claim_checks,
         "template_category": matched_template.category if matched_template else None,
         "confidence_rationale": rationale,
         "freshness": [

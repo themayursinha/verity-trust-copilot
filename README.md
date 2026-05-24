@@ -25,7 +25,7 @@ Additional tools are available from the top navigation bar:
 
 | Page | Route | Purpose |
 |------|-------|---------|
-| **Dashboard** | `/static/dashboard.html` | Framework coverage, evidence/policy/approval stats, activity log, Vanta sync |
+| **Dashboard** | `/static/dashboard.html` | Framework coverage, evidence/policy/approval stats, activity log, mock Vanta evidence import |
 | **Policies** | `/static/policies.html` | Create, version, and schedule review of security policies |
 | **Pentests** | `/static/pentests.html` | Track penetration testing engagements and findings |
 
@@ -117,7 +117,7 @@ python3 security_questionnaire_copilot.py \
 - **Compliance Dashboard** — framework coverage bars (ISO 27001, SOC 2, GDPR, DORA), evidence freshness stats, policy summary, approval counts, recent activity log.
 - **Policy Center** — create, version, schedule reviews for security policies.
 - **Penetration Testing Tracker** — manage engagements and per-finding details (severity, status, assignee, remediation).
-- **Vanta Integration** — connect your Vanta API key and sync evidence automatically into the local library.
+- **Mock Vanta Import** — import local demo evidence records without calling the Vanta API or storing API keys.
 
 ## Included Evidence Areas
 
@@ -126,7 +126,7 @@ The sample knowledge base includes evidence for:
 - ISO 27001 ISMS alignment
 - GDPR privacy and processor controls
 - DORA ICT and operational resilience mapping
-- Vanta control evidence
+- Mock Vanta control evidence
 - Encryption and key management
 - Meeting data retention and deletion
 - AI data usage and model-training commitments
@@ -136,9 +136,33 @@ The sample knowledge base includes evidence for:
 - External penetration testing
 - Unsupported claims such as FedRAMP and HIPAA
 
+## Local Development
+
+Install optional development tools:
+
+```bash
+python3 -m pip install -e '.[dev]'
+```
+
+Run checks locally:
+
+```bash
+make check
+```
+
+Individual commands are also available:
+
+```bash
+make test
+make lint
+make format-check
+make typecheck
+```
+
 ## Security Considerations
 
 - No external APIs are used, so questionnaire content and evidence stay local.
+- The Vanta flow is a mock local import only. It does not validate API keys, call Vanta, or persist submitted API-key-like values.
 - The prototype only drafts from approved snippets and cites every source used.
 - Unsupported topics are intentionally flagged for review instead of being answered creatively.
 - Evidence ownership and `last_reviewed` metadata make it easier to route stale or weak answers to Security, Privacy, Legal, or GRC.
@@ -160,7 +184,7 @@ For example, the sample evidence includes an unsupported-claims register stating
 
 - Keyword scoring (BM25) is still lexical and may miss semantic paraphrases.
 - The sample evidence is fictional and should be replaced with real approved Jamie evidence before use.
-- The dashboard, policies, and pentest data are local-only (no sync with external GRC platforms beyond Vanta).
+- The dashboard, policies, pentest data, and mock Vanta import are local-only; the mock import does not call external GRC APIs.
 - The script does not understand contracts, customer-specific commitments, or regional deployment boundaries unless those are present in evidence.
 - Confidence is heuristic and should not be treated as legal or compliance approval.
 
@@ -169,6 +193,7 @@ For example, the sample evidence includes an unsupported-claims register stating
 - Use local embeddings or an approved private retrieval model for better semantic matching.
 - Add role-based access control and audit logging.
 - Track evidence expiry, owners, renewal reminders, and customer-specific answer history.
+- Replace the mock Vanta import with a real connector only after adding secrets management, API error handling, and audit logging.
 - Integrate with CRM workflows so Sales can request review without leaving the deal workspace.
 - Add contradiction detection when multiple evidence sources disagree.
 - Add export formats for additional security questionnaire portals.

@@ -321,5 +321,53 @@ class TestApprovalPersistence(unittest.TestCase):
             handler.set_approval(None, {"question": "Q?", "status": "invalid"})
 
 
+class TestVantaMockConfig(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.config_path = self.tmpdir / "vanta_config.json"
+
+    def test_save_vanta_config_does_not_persist_api_keys(self):
+        import web_app
+
+        original = web_app.VANTA_CONFIG_PATH
+        web_app.VANTA_CONFIG_PATH = self.config_path
+        try:
+            web_app.save_vanta_config(
+                {
+                    "connected": True,
+                    "api_key": "secret-key",
+                    "token": "secret-token",
+                    "api_key_configured": True,
+                    "organization_id": "demo-org",
+                }
+            )
+            raw = self.config_path.read_text(encoding="utf-8")
+            self.assertNotIn("secret-key", raw)
+            self.assertNotIn("secret-token", raw)
+            config = web_app.load_vanta_config()
+            self.assertFalse(config["api_key_configured"])
+            self.assertEqual(config["integration_mode"], "mock")
+            self.assertEqual(config["organization_id"], "demo-org")
+        finally:
+            web_app.VANTA_CONFIG_PATH = original
+
+    def test_load_vanta_config_strips_legacy_secret_fields(self):
+        import web_app
+
+        original = web_app.VANTA_CONFIG_PATH
+        web_app.VANTA_CONFIG_PATH = self.config_path
+        self.config_path.write_text(
+            '{"connected": true, "api_key": "legacy-secret", "api_key_configured": true}',
+            encoding="utf-8",
+        )
+        try:
+            config = web_app.load_vanta_config()
+            self.assertNotIn("api_key", config)
+            self.assertFalse(config["api_key_configured"])
+            self.assertEqual(config["integration_mode"], "mock")
+        finally:
+            web_app.VANTA_CONFIG_PATH = original
+
+
 if __name__ == "__main__":
     unittest.main()

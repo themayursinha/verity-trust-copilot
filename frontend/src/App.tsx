@@ -11,8 +11,10 @@ import { PoliciesPage } from "@/pages/policies";
 import { PentestsPage } from "@/pages/pentests";
 import { SettingsPage } from "@/pages/settings";
 import { NotFoundPage } from "@/pages/not-found";
+import { LandingPage } from "@/pages/landing";
+import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { type ReactNode } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +46,45 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function HomeRoute() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) return <Navigate to="/app/dashboard" replace />;
+
+  return <LandingPage />;
+}
+
+function ProtectedLayoutWithOnboarding() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("onboarding_complete")) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  return (
+    <>
+      <AppLayout />
+      <OnboardingWizard
+        open={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
+    </>
+  );
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -53,7 +94,7 @@ function AppRoutes() {
         path="/app"
         element={
           <ProtectedRoute>
-            <AppLayout />
+            <ProtectedLayoutWithOnboarding />
           </ProtectedRoute>
         }
       >
@@ -65,7 +106,7 @@ function AppRoutes() {
         <Route path="pentests" element={<PentestsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
-      <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/" element={<HomeRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

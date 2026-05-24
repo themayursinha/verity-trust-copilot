@@ -10,10 +10,10 @@ from datetime import date
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 
 from security_questionnaire_copilot import build_results, load_evidence, load_questions, parse_date, write_outputs
-
 
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
@@ -28,11 +28,13 @@ CONTENT_TYPES = {
 }
 
 
-def parse_questions(payload: dict[str, object]) -> list[str]:
-    if isinstance(payload.get("questions"), list):
-        return [str(item).strip() for item in payload["questions"] if str(item).strip()]
-    if isinstance(payload.get("question_text"), str):
-        return [line.strip() for line in payload["question_text"].splitlines() if line.strip()]
+def parse_questions(payload: dict[str, Any]) -> list[str]:
+    questions = payload.get("questions")
+    if isinstance(questions, list):
+        return [str(item).strip() for item in questions if str(item).strip()]
+    question_text = payload.get("question_text")
+    if isinstance(question_text, str):
+        return [line.strip() for line in question_text.splitlines() if line.strip()]
     return []
 
 
@@ -41,45 +43,48 @@ def slugify(value: str) -> str:
     return slug or "evidence"
 
 
-def load_evidence_records() -> list[dict[str, object]]:
+def load_evidence_records() -> list[dict[str, Any]]:
     return json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
 
 
-def normalize_evidence_record(record: dict[str, object]) -> dict[str, object]:
+def normalize_evidence_record(record: dict[str, Any]) -> dict[str, Any]:
     required = ["title", "type", "last_reviewed", "owner", "summary", "snippets"]
     missing = [field for field in required if not record.get(field)]
     if missing:
         raise ValueError(f"Evidence record missing required fields: {', '.join(missing)}")
-    if not isinstance(record["snippets"], list) or not record["snippets"]:
+    snippets = record.get("snippets")
+    if not isinstance(snippets, list) or not snippets:
         raise ValueError("Evidence record must include at least one snippet.")
 
     parse_date(str(record["last_reviewed"]))
     title = str(record["title"]).strip()
-    normalized = {
+    frameworks = record.get("frameworks", [])
+    control_ids = record.get("control_ids", [])
+    normalized: dict[str, Any] = {
         "id": str(record.get("id") or slugify(title)).strip(),
         "title": title,
         "type": str(record["type"]).strip(),
-        "frameworks": [str(item).strip() for item in record.get("frameworks", []) if str(item).strip()],
-        "control_ids": [str(item).strip() for item in record.get("control_ids", []) if str(item).strip()],
+        "frameworks": [str(item).strip() for item in frameworks if isinstance(item, str) and item.strip()],
+        "control_ids": [str(item).strip() for item in control_ids if isinstance(item, str) and item.strip()],
         "last_reviewed": str(record["last_reviewed"]).strip(),
         "owner": str(record["owner"]).strip(),
         "summary": str(record["summary"]).strip(),
-        "snippets": [str(item).strip() for item in record["snippets"] if str(item).strip()],
+        "snippets": [str(item).strip() for item in snippets if isinstance(item, str) and item.strip()],
     }
     if not normalized["snippets"]:
         raise ValueError("Evidence snippets cannot be blank.")
     return normalized
 
 
-def save_evidence_records(records: list[dict[str, object]]) -> None:
+def save_evidence_records(records: list[dict[str, Any]]) -> None:
     EVIDENCE_PATH.write_text(json.dumps(records, indent=2), encoding="utf-8")
 
 
-def render_customer_ready_markdown(answer: dict[str, object]) -> str:
+def render_customer_ready_markdown(answer: dict[str, Any]) -> str:
     lines = [
-        f"# Customer Security Answer",
+        "# Customer Security Answer",
         "",
-        f"## Question",
+        "## Question",
         "",
         str(answer.get("question", "")),
         "",
@@ -182,7 +187,7 @@ class CopilotHandler(BaseHTTPRequestHandler):
         except Exception as exc:  # pragma: no cover - keeps local demo failures readable.
             self.send_json({"error": f"Unexpected server error: {exc}"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    def store_evidence(self, payload: dict[str, object]) -> None:
+    def store_evidence(self, payload: dict[str, Any]) -> None:
         incoming = payload.get("records", payload.get("record"))
         if isinstance(incoming, dict):
             incoming_records = [incoming]
@@ -193,7 +198,7 @@ class CopilotHandler(BaseHTTPRequestHandler):
 
         records = load_evidence_records()
         existing_ids = {str(record.get("id")) for record in records}
-        normalized_records = []
+        normalized_records: list[dict[str, Any]] = []
         for item in incoming_records:
             if not isinstance(item, dict):
                 raise ValueError("Evidence records must be JSON objects.")
@@ -212,7 +217,7 @@ class CopilotHandler(BaseHTTPRequestHandler):
         save_evidence_records(records)
         self.send_json({"stored": len(normalized_records), "evidence": records}, HTTPStatus.CREATED)
 
-    def export_answer(self, payload: dict[str, object]) -> None:
+    def export_answer(self, payload: dict[str, Any]) -> None:
         answer = payload.get("answer")
         if not isinstance(answer, dict):
             raise ValueError("Send an answer object to export.")
@@ -243,7 +248,7 @@ class CopilotHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, format: str, *args: object) -> None:
-        print("%s - %s" % (self.address_string(), format % args))
+        print(f"{self.address_string()} - {format % args}")
 
 
 def parse_args() -> argparse.Namespace:

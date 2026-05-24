@@ -17,7 +17,6 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-
 FRESH_DAYS = 180
 STALE_DAYS = 365
 MAX_MATCHES = 4
@@ -71,13 +70,26 @@ SYNONYMS = {
     "encrypted": {"encryption", "tls", "key", "keys", "at-rest", "transit"},
     "access": {"least", "privilege", "mfa", "sso", "offboarding", "roles"},
     "incident": {"breach", "triage", "containment", "notification", "gdpr"},
-    "subprocessors": {"subprocessor", "vendor", "vendors", "supplier", "third-party"},
+    "subprocessors": {"subprocessor", "vendor", "vendors", "supplier", "third-party", "subcontractor"},
     "dora": {"resilience", "ict", "operational", "third-party", "risk"},
-    "pentest": {"penetration", "test", "testing", "api", "application"},
+    "pentest": {"penetration", "test", "testing", "api", "application", "vulnerability"},
     "fedramp": {"authorization", "authorized"},
     "iso": {"27001", "isms", "certification", "aligned"},
     "gdpr": {"privacy", "processor", "breach", "notification", "dpa"},
     "vanta": {"evidence", "controls", "compliance", "mfa", "device"},
+    "backup": {"backups", "retention", "restore", "recovery", "continuity"},
+    "breach": {"incident", "notification", "gdpr", "containment", "triage", "compromise"},
+    "vendor": {"vendors", "supplier", "third-party", "subprocessor", "subprocessors"},
+    "third-party": {"third-party", "vendor", "vendors", "supplier", "subprocessor", "subprocessors"},
+    "soc": {"soc2", "soc-2", "report", "audit", "controls"},
+    "audit": {"audits", "auditing", "review", "examination", "assessment"},
+    "certification": {"certifications", "certified", "accreditation", "attestation"},
+    "policy": {"policies", "procedure", "procedures", "standard", "standards"},
+    "compliance": {"compliant", "regulatory", "requirements", "obligations"},
+    "notification": {"notify", "notifications", "alert", "reporting", "disclosure"},
+    "vulnerability": {"vulnerabilities", "scanning", "remediation", "patch", "cve"},
+    "sso": {"single-sign-on", "identity", "authentication", "login"},
+    "mfa": {"multi-factor", "two-factor", "2fa", "authentication", "sso"},
 }
 
 
@@ -114,12 +126,37 @@ def tokenize(text: str) -> list[str]:
     return normalized
 
 
-def expand_terms(tokens: list[str]) -> Counter[str]:
-    terms = Counter(tokens)
+def expand_terms(tokens: list[str]) -> dict[str, float]:
+    terms: dict[str, float] = dict(Counter(tokens))
     for token in tokens:
         for related in SYNONYMS.get(token, set()):
-            terms[related] += 0.45
+            terms[related] = terms.get(related, 0.0) + 0.45
     return terms
+
+
+def compute_idf(snippets: list[EvidenceSnippet]) -> dict[str, float]:
+    n = len(snippets)
+    if n == 0:
+        return {}
+    df: Counter[str] = Counter()
+    for snippet in snippets:
+        evidence_text = " ".join(
+            [
+                snippet.title,
+                snippet.evidence_type,
+                " ".join(snippet.frameworks),
+                " ".join(snippet.control_ids),
+                snippet.summary,
+                snippet.snippet,
+            ]
+        )
+        for term in set(tokenize(evidence_text)):
+            df[term] += 1
+
+    idf: dict[str, float] = {}
+    for term, doc_count in df.items():
+        idf[term] = math.log(1.0 + n / (1.0 + doc_count))
+    return idf
 
 
 def parse_date(value: str) -> date:
@@ -165,7 +202,9 @@ def freshness_status(last_reviewed: date, as_of: date) -> tuple[str, int]:
     return "outdated", age_days
 
 
-def score_snippet(question: str, snippet: EvidenceSnippet, as_of: date) -> Match | None:
+def score_snippet(
+    question: str, snippet: EvidenceSnippet, as_of: date, idf: dict[str, float] | None = None
+) -> Match | None:
     q_tokens = tokenize(question)
     q_terms = expand_terms(q_tokens)
     evidence_text = " ".join(
@@ -186,7 +225,8 @@ def score_snippet(question: str, snippet: EvidenceSnippet, as_of: date) -> Match
     for term, weight in q_terms.items():
         if e_terms.get(term, 0) > 0:
             matched_terms.append(term)
-            score += float(weight) * (1.0 + math.log1p(e_terms[term]))
+            idf_weight = idf.get(term, 1.0) if idf else 1.0
+            score += weight * idf_weight * (1.0 + math.log1p(e_terms[term]))
 
     q_phrases = re.findall(r"\b[a-z0-9][a-z0-9\-]+(?:\s+[a-z0-9][a-z0-9\-]+){1,3}\b", question.lower())
     evidence_lower = evidence_text.lower()
@@ -203,16 +243,23 @@ def score_snippet(question: str, snippet: EvidenceSnippet, as_of: date) -> Match
 
     if score <= 0:
         return None
-    return Match(snippet=snippet, score=round(score, 3), matched_terms=sorted(set(matched_terms)), freshness=freshness, age_days=age_days)
+    return Match(
+        snippet=snippet,
+        score=round(score, 3),
+        matched_terms=sorted(set(matched_terms)),
+        freshness=freshness,
+        age_days=age_days,
+    )
 
 
 def retrieve(question: str, snippets: list[EvidenceSnippet], as_of: date) -> list[Match]:
-    matches = [match for snippet in snippets if (match := score_snippet(question, snippet, as_of))]
+    idf = compute_idf(snippets)
+    matches = [match for snippet in snippets if (match := score_snippet(question, snippet, as_of, idf))]
     matches.sort(key=lambda match: match.score, reverse=True)
     if not matches:
         return []
 
-    cutoff = max(1.5, matches[0].score * 0.5)
+    cutoff = max(0.6, matches[0].score * 0.4)
     matches = [match for match in matches if match.score >= cutoff]
 
     deduped: list[Match] = []
@@ -237,11 +284,14 @@ def confidence(matches: list[Match]) -> tuple[str, str]:
     unique_sources = len({match.snippet.evidence_id for match in matches})
     has_outdated = any(match.freshness == "outdated" for match in matches)
 
-    if top >= 5.8 and fresh_matches >= 1 and not has_outdated:
-        if unique_sources >= 2 or len(matches) >= 2:
-            return "high", "Strong keyword coverage across fresh or current approved evidence."
+    if top >= 5.8 and fresh_matches >= 1 and not has_outdated and (unique_sources >= 2 or len(matches) >= 2):
+        return "high", "Strong keyword coverage across fresh or current approved evidence."
     if top >= 3.2 and not has_outdated:
-        return "medium", "Relevant evidence was found, but coverage is narrower or includes stale evidence that should be checked before sending."
+        return (
+            "medium",
+            "Relevant evidence was found, but coverage is narrower or includes stale "
+            "evidence that should be checked before sending.",
+        )
     return "low", "Evidence is weak, outdated, or too narrow for a supported customer-facing answer."
 
 
@@ -257,7 +307,10 @@ def generate_answer(question: str, matches: list[Match], level: str) -> str:
         )
 
     if level == "low":
-        lead = "Needs human review. The evidence below may be relevant, but it is not strong enough for an unsupported claim."
+        lead = (
+            "Needs human review. The evidence below may be relevant, but it is not "
+            "strong enough for an unsupported claim."
+        )
     else:
         lead = "Draft answer based on approved evidence:"
 
@@ -340,7 +393,12 @@ def render_markdown(results: dict[str, Any]) -> str:
         if item["freshness"]:
             for check in item["freshness"]:
                 lines.append(
-                    f"- `{check['source']}` last reviewed {check['last_reviewed']} ({check['age_days']} days old): {check['status']}"
+                    "- `{source}` last reviewed {reviewed} ({age} days old): {status}".format(
+                        source=check["source"],
+                        reviewed=check["last_reviewed"],
+                        age=check["age_days"],
+                        status=check["status"],
+                    )
                 )
         else:
             lines.append("- No matching evidence found.")
@@ -348,7 +406,13 @@ def render_markdown(results: dict[str, Any]) -> str:
         if item["citations"]:
             for citation in item["citations"]:
                 lines.append(
-                    f"- [{citation['citation']}] {citation['title']} (`{citation['source_id']}`, {citation['type']}, reviewed {citation['last_reviewed']})"
+                    "- [{citation}] {title} (`{source_id}`, {type}, reviewed {reviewed})".format(
+                        citation=citation["citation"],
+                        title=citation["title"],
+                        source_id=citation["source_id"],
+                        type=citation["type"],
+                        reviewed=citation["last_reviewed"],
+                    )
                 )
         else:
             lines.append("- No citations available.")
@@ -358,7 +422,12 @@ def render_markdown(results: dict[str, Any]) -> str:
         [
             "## Guardrail",
             "",
-            "Answers are assembled only from retrieved evidence snippets. Low-confidence results are explicitly marked for human review so the team can avoid unsupported claims while still accelerating routine questionnaire work.",
+            (
+                "Answers are assembled only from retrieved evidence snippets. "
+                "Low-confidence results are explicitly marked for human review so "
+                "the team can avoid unsupported claims while still accelerating "
+                "routine questionnaire work."
+            ),
             "",
         ]
     )

@@ -24,9 +24,7 @@ async def dashboard_overview(
         "dora": {"id": "dora", "coverage": 0.0, "evidence_count": 0, "control_count": 0},
     }
 
-    evidence_result = await db.execute(
-        select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id)
-    )
+    evidence_result = await db.execute(select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id))
     records = evidence_result.scalars().all()
 
     for rec in records:
@@ -56,26 +54,20 @@ async def dashboard_overview(
             elif age_days >= 365:
                 stale += 1
 
-    policies_result = await db.execute(
-        select(Policy).where(Policy.org_id == current_user.org_id)
-    )
+    policies_result = await db.execute(select(Policy).where(Policy.org_id == current_user.org_id))
     policies = policies_result.scalars().all()
 
     active_policies = sum(1 for p in policies if p.status == "active")
     draft_policies = sum(1 for p in policies if p.status in ("draft", None, ""))
     cutoff = today + timedelta(days=30)
-    upcoming = sum(
-        1 for p in policies if p.next_review is not None and p.next_review <= cutoff
-    )
+    upcoming = sum(1 for p in policies if p.next_review is not None and p.next_review <= cutoff)
 
     approval_result = await db.execute(
         select(Approval).where(
             Approval.answer_id.in_(
                 select(Answer.id).where(
                     Answer.generation_id.in_(
-                        select(AnswerGeneration.id).where(
-                            AnswerGeneration.org_id == current_user.org_id
-                        )
+                        select(AnswerGeneration.id).where(AnswerGeneration.org_id == current_user.org_id)
                     )
                 )
             )
@@ -88,10 +80,7 @@ async def dashboard_overview(
     unreviewed = sum(1 for a in approvals if a.status in ("unreviewed", None, ""))
 
     activity_result = await db.execute(
-        select(AuditLog)
-        .where(AuditLog.org_id == current_user.org_id)
-        .order_by(AuditLog.created_at.desc())
-        .limit(10)
+        select(AuditLog).where(AuditLog.org_id == current_user.org_id).order_by(AuditLog.created_at.desc()).limit(10)
     )
     activity_logs = activity_result.scalars().all()
     recent_activity = [

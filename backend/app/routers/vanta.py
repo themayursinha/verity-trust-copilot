@@ -1,4 +1,5 @@
 """Vanta and Drata integration router."""
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -56,9 +57,7 @@ async def vanta_sync(
             "integration_mode": mode,
         }
 
-    result = await db.execute(
-        select(EvidenceRecord.id).where(EvidenceRecord.org_id == org_id)
-    )
+    result = await db.execute(select(EvidenceRecord.id).where(EvidenceRecord.org_id == org_id))
     existing_ids = set(result.scalars().all())
 
     synced = []

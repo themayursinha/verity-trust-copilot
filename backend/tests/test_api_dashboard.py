@@ -1,4 +1,5 @@
 """Integration tests for dashboard endpoint."""
+
 import pytest
 
 

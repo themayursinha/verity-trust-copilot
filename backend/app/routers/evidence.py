@@ -135,9 +135,7 @@ async def import_evidence(
             detail="Send an evidence record or a list of records.",
         )
 
-    result = await db.execute(
-        select(EvidenceRecord.id).where(EvidenceRecord.org_id == current_user.org_id)
-    )
+    result = await db.execute(select(EvidenceRecord.id).where(EvidenceRecord.org_id == current_user.org_id))
     existing_ids = set(result.scalars().all())
 
     for item in incoming_records:

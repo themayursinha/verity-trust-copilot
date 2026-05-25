@@ -1,4 +1,5 @@
 """LLM service for generating answer suggestions when BM25 confidence is low."""
+
 from typing import Any
 
 import httpx

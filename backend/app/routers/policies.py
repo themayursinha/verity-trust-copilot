@@ -94,9 +94,7 @@ async def list_policies(
     current_user: User = Depends(get_current_active_user),
 ):
     result = await db.execute(
-        select(Policy)
-        .where(Policy.org_id == current_user.org_id)
-        .order_by(Policy.updated_at.desc())
+        select(Policy).where(Policy.org_id == current_user.org_id).order_by(Policy.updated_at.desc())
     )
     return result.scalars().all()
 

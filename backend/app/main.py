@@ -9,7 +9,21 @@ from app.config import settings
 from app.database import Base, engine
 from app.middleware import LoggingMiddleware, setup_logging, setup_security
 from app.middleware.license import LicenseMiddleware
-from app.routers import answers, approvals, auth, dashboard, evidence, export, health, llm, org, pentests, policies, reports, vanta
+from app.routers import (
+    answers,
+    approvals,
+    auth,
+    dashboard,
+    evidence,
+    export,
+    health,
+    llm,
+    org,
+    pentests,
+    policies,
+    reports,
+    vanta,
+)
 
 setup_logging()
 

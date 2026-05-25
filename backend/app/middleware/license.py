@@ -1,4 +1,5 @@
 """License middleware for seat enforcement."""
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 

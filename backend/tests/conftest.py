@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -24,7 +25,7 @@ auth_svc.store_refresh_token_family = AsyncMock(return_value=None)
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
-test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
+test_engine = create_async_engine(settings.DATABASE_URL, echo=False, poolclass=NullPool)
 TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
 
 

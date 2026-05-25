@@ -59,9 +59,7 @@ async def list_answer_generations(
 
     response: list[AnswerGenerationResponse] = []
     for gen in generations:
-        ans_result = await db.execute(
-            select(Answer).where(Answer.generation_id == gen.id)
-        )
+        ans_result = await db.execute(select(Answer).where(Answer.generation_id == gen.id))
         answers = ans_result.scalars().all()
         response.append(
             AnswerGenerationResponse(
@@ -114,9 +112,7 @@ async def get_answer_generation(
     if not gen:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer generation not found")
 
-    ans_result = await db.execute(
-        select(Answer).where(Answer.generation_id == gen.id)
-    )
+    ans_result = await db.execute(select(Answer).where(Answer.generation_id == gen.id))
     answers = ans_result.scalars().all()
 
     return AnswerGenerationResponse(
@@ -154,9 +150,7 @@ async def generate_answers(
 
     as_of = parse_date(body.as_of) if body.as_of else date.today()
 
-    ev_result = await db.execute(
-        select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id)
-    )
+    ev_result = await db.execute(select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id))
     evidence_records = ev_result.scalars().all()
     evidence_list = _orm_to_evidence_snippets(evidence_records)
 

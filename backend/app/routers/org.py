@@ -34,9 +34,7 @@ async def invite_member(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     active_count = await db.scalar(
-        select(func.count(User.id)).where(
-            User.org_id == current_user.org_id, User.is_active
-        )
+        select(func.count(User.id)).where(User.org_id == current_user.org_id, User.is_active)
     )
 
     org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
@@ -114,16 +112,13 @@ async def update_branding(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    result = await db.execute(
-        select(Organization).where(Organization.id == current_user.org_id)
-    )
+    result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
     org = result.scalar_one()
 
     if body.brand_color is not None:
         if not body.brand_color.startswith("#") or len(body.brand_color) not in (4, 7):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="brand_color must be a hex color like #0f766e"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="brand_color must be a hex color like #0f766e"
             )
         org.brand_color = body.brand_color
 
@@ -143,9 +138,7 @@ async def license_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    org_result = await db.execute(
-        select(Organization).where(Organization.id == current_user.org_id)
-    )
+    org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
     org = org_result.scalar_one()
 
     if not org.license_key:
@@ -156,6 +149,7 @@ async def license_status(
         }
 
     from app.services.license_service import validate_license
+
     license_info = validate_license(org.license_key)
 
     return {
@@ -176,6 +170,7 @@ async def activate_license(
     current_user: User = Depends(require_admin),
 ):
     from app.services.license_service import validate_license
+
     license_info = validate_license(body.license_key)
 
     if not license_info.valid:
@@ -184,9 +179,7 @@ async def activate_license(
             detail=f"Invalid license: {license_info.reason}",
         )
 
-    org_result = await db.execute(
-        select(Organization).where(Organization.id == current_user.org_id)
-    )
+    org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
     org = org_result.scalar_one()
     org.license_key = body.license_key
     org.max_seats = license_info.max_seats
@@ -207,9 +200,7 @@ async def org_info(
     org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
     org = org_result.scalar_one()
     active_count = await db.scalar(
-        select(func.count(User.id)).where(
-            User.org_id == current_user.org_id, User.is_active
-        )
+        select(func.count(User.id)).where(User.org_id == current_user.org_id, User.is_active)
     )
     return {
         "id": org.id,

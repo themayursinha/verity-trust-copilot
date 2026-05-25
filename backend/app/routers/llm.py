@@ -1,4 +1,5 @@
 """LLM-powered answer suggestion router."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select

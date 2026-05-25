@@ -1,4 +1,5 @@
 """License key validation using Ed25519 signatures."""
+
 import base64
 import json
 import time
@@ -52,8 +53,13 @@ def validate_license(license_key: str) -> LicenseInfo:
         parts = license_key.split(".")
         if len(parts) != 2:
             return LicenseInfo(
-                org_id="", org_name="", max_seats=0, issued_at=0,
-                expires_at=None, customer_email="", valid=False,
+                org_id="",
+                org_name="",
+                max_seats=0,
+                issued_at=0,
+                expires_at=None,
+                customer_email="",
+                valid=False,
                 reason="Invalid license key format",
             )
 
@@ -92,14 +98,24 @@ def validate_license(license_key: str) -> LicenseInfo:
 
     except BadSignatureError:
         return LicenseInfo(
-            org_id="", org_name="", max_seats=0, issued_at=0,
-            expires_at=None, customer_email="", valid=False,
+            org_id="",
+            org_name="",
+            max_seats=0,
+            issued_at=0,
+            expires_at=None,
+            customer_email="",
+            valid=False,
             reason="Invalid license signature — key may be tampered",
         )
     except Exception as e:
         return LicenseInfo(
-            org_id="", org_name="", max_seats=0, issued_at=0,
-            expires_at=None, customer_email="", valid=False,
+            org_id="",
+            org_name="",
+            max_seats=0,
+            issued_at=0,
+            expires_at=None,
+            customer_email="",
+            valid=False,
             reason=f"License validation error: {str(e)}",
         )
 

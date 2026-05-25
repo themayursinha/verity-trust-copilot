@@ -1,4 +1,5 @@
 """Vanta integration service — fetches evidence from Vanta API."""
+
 from datetime import date, datetime
 from typing import Any
 
@@ -33,23 +34,21 @@ async def fetch_vanta_evidence() -> list[dict[str, Any]]:
 
             evidence = []
             for item in records:
-                evidence.append({
-                    "id": f"vanta-{item.get('id', '')}",
-                    "title": item.get("title") or item.get("name") or "Vanta Evidence",
-                    "type": "control-evidence",
-                    "frameworks": item.get("frameworks") or item.get("controls", []) or [],
-                    "control_ids": _extract_control_ids(item),
-                    "last_reviewed": _parse_date(
-                        item.get("lastTestedAt") or item.get("updatedAt")
-                    ),
-                    "owner": item.get("assignee", {}).get("name", "Vanta Import")
-                    if isinstance(item.get("assignee"), dict)
-                    else "Vanta Import",
-                    "summary": (item.get("description") or item.get("evidence") or "")[:500],
-                    "snippets": [
-                        (item.get("description") or item.get("evidence") or "Imported from Vanta")
-                    ],
-                })
+                evidence.append(
+                    {
+                        "id": f"vanta-{item.get('id', '')}",
+                        "title": item.get("title") or item.get("name") or "Vanta Evidence",
+                        "type": "control-evidence",
+                        "frameworks": item.get("frameworks") or item.get("controls", []) or [],
+                        "control_ids": _extract_control_ids(item),
+                        "last_reviewed": _parse_date(item.get("lastTestedAt") or item.get("updatedAt")),
+                        "owner": item.get("assignee", {}).get("name", "Vanta Import")
+                        if isinstance(item.get("assignee"), dict)
+                        else "Vanta Import",
+                        "summary": (item.get("description") or item.get("evidence") or "")[:500],
+                        "snippets": [(item.get("description") or item.get("evidence") or "Imported from Vanta")],
+                    }
+                )
 
             return evidence
 

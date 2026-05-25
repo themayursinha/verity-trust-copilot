@@ -1,4 +1,5 @@
 """Basic smoke test for the FastAPI application."""
+
 import pytest
 
 

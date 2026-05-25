@@ -1,4 +1,5 @@
 """Mock Vanta evidence data for when no API key is configured."""
+
 from datetime import date
 
 

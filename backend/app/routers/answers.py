@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.engine import EvidenceSnippet, build_results, load_questions, parse_date
-from app.core.file_parser import parse_questionnaire_file, ALLOWED_EXTENSIONS
+from app.core.file_parser import parse_questionnaire_file
 from app.database import get_db
 from app.dependencies import get_current_active_user
 from app.models.answer import Answer, AnswerGeneration

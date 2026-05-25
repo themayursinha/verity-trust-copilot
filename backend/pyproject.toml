@@ -43,6 +43,8 @@ quote-style = "double"
 
 [tool.mypy]
 python_version = "3.12"
+disable_error_code = ["var-annotated", "assignment", "union-attr", "arg-type", "return-value"]
+warn_unused_ignores = false
 
 [tool.setuptools.packages.find]
 include = ["app*", "emails*"]

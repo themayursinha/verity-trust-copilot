@@ -42,3 +42,6 @@ quote-style = "double"
 
 [tool.mypy]
 python_version = "3.12"
+
+[tool.setuptools.packages.find]
+include = ["app*", "emails*"]

@@ -56,7 +56,7 @@ async def generate_soc2_report(
         )
         all_answers.extend(ans_result.scalars().all())
 
-    frameworks = {"iso-27001": [], "soc-2": [], "gdpr": [], "dora": []}
+    frameworks: dict[str, list[str]] = {"iso-27001": [], "soc-2": [], "gdpr": [], "dora": []}
     for ev in evidence:
         for fw in (ev.frameworks or []):
             fw_key = fw.lower().replace(" ", "-").replace("_", "-")

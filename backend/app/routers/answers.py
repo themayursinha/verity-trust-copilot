@@ -1,10 +1,11 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.engine import EvidenceSnippet, build_results, load_questions, parse_date
+from app.core.file_parser import parse_questionnaire_file, ALLOWED_EXTENSIONS
 from app.database import get_db
 from app.dependencies import get_current_active_user
 from app.models.answer import Answer, AnswerGeneration
@@ -216,3 +217,19 @@ async def generate_answers(
         ],
         created_at=generation.created_at,
     )
+
+
+@router.post("/import-file")
+async def import_questions_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user),
+):
+    try:
+        questions = await parse_questionnaire_file(file)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+    if not questions:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No questions found in the file. Please check the format.")
+
+    return {"questions": questions, "count": len(questions), "filename": file.filename}

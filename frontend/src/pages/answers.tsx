@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   FileText,
@@ -12,6 +12,8 @@ import {
   ExternalLink,
   Clock,
   FileUp,
+  Upload,
+  ClipboardPaste,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +38,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus, getAnswerGenerations } from "@/lib/api";
+import { generateAnswers, setApproval, exportAnswer, getSampleQuestions, suggestLLMAnswer, getLLMStatus, getAnswerGenerations, importQuestionsFromFile } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { parseQuestions } from "@/lib/parse-questions";
 import type { Answer, AnswerGeneration } from "@/types";
@@ -67,6 +69,12 @@ export function AnswersPage() {
   const [llmError, setLlmError] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importText, setImportText] = useState("");
+  const [importTab, setImportTab] = useState<"paste" | "upload">("upload");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadQuestions, setUploadQuestions] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: generations, isLoading: loadingGenerations } = useQuery({
     queryKey: ["answer-generations"],
@@ -153,6 +161,66 @@ export function AnswersPage() {
     }
   };
 
+  const handleFileUpload = useCallback(async (file: File) => {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext !== "xlsx" && ext !== "docx") {
+      setUploadError("Please upload a .xlsx or .docx file.");
+      return;
+    }
+    setUploadFile(file);
+    setUploadError(null);
+    setUploadQuestions([]);
+    setUploadLoading(true);
+    try {
+      const result = await importQuestionsFromFile(file);
+      setUploadQuestions(result.questions);
+    } catch (e: any) {
+      setUploadError(e?.response?.data?.detail || "Failed to parse file. Please check the format.");
+    } finally {
+      setUploadLoading(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileUpload(file);
+    },
+    [handleFileUpload]
+  );
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFileUpload(file);
+    },
+    [handleFileUpload]
+  );
+
+  const handleImportUploaded = () => {
+    if (uploadQuestions.length > 0) {
+      setQuestions((prev) => {
+        const existing = new Set(prev.split("\n").filter(Boolean));
+        return [...prev.split("\n").filter(Boolean), ...uploadQuestions.filter((q) => !existing.has(q))].join("\n");
+      });
+    }
+    setImportDialogOpen(false);
+    setUploadFile(null);
+    setUploadQuestions([]);
+    setUploadError(null);
+    setImportText("");
+  };
+
+  const resetImportDialog = () => {
+    setImportDialogOpen(false);
+    setImportText("");
+    setUploadFile(null);
+    setUploadQuestions([]);
+    setUploadError(null);
+    setImportTab("upload");
+  };
+
   const handleReject = async (answer: Answer) => {
     try {
       await setApproval(answer.question, "rejected");
@@ -223,10 +291,10 @@ export function AnswersPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => setImportDialogOpen(true)}
+              onClick={() => { setImportDialogOpen(true); setImportTab("upload"); }}
             >
-              <FileUp className="mr-2 h-4 w-4" />
-              Paste Questionnaire
+              <Upload className="mr-2 h-4 w-4" />
+              Import .xlsx/.docx
             </Button>
           </div>
         </CardContent>
@@ -501,48 +569,138 @@ export function AnswersPage() {
         </div>
       </div>
 
-      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+      <Dialog open={importDialogOpen} onOpenChange={(open) => { if (!open) resetImportDialog(); else setImportDialogOpen(true); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Import Questions</DialogTitle>
             <DialogDescription>
-              Paste a security questionnaire and we&apos;ll extract the questions automatically.
+              Paste a questionnaire or upload a .xlsx/.docx file.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <textarea
-              className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              placeholder={`Paste your questionnaire here. We support:\n\n1. What is your encryption standard?\n2. How do you handle incidents?\nQ3: Do you have a disaster recovery plan?\n• Are you SOC 2 certified?\n\nOr just lines ending with question marks?`}
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-            />
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {importText.trim() ? `${parseQuestions(importText).length} questions detected` : "Paste text above to detect questions"}
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => { setImportDialogOpen(false); setImportText(""); }}>
+
+          <div className="flex border-b">
+            <button
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                importTab === "upload"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => { setImportTab("upload"); setUploadError(null); }}
+            >
+              <Upload className="h-4 w-4" />
+              Upload File
+            </button>
+            <button
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                importTab === "paste"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setImportTab("paste")}
+            >
+              <ClipboardPaste className="h-4 w-4" />
+              Paste Text
+            </button>
+          </div>
+
+          {importTab === "upload" ? (
+            <div className="space-y-4">
+              <div
+                className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
+                  uploadFile
+                    ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                    : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                }`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploadLoading ? (
+                  <>
+                    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                    <p className="mt-3 text-sm text-muted-foreground">Parsing file...</p>
+                  </>
+                ) : uploadFile ? (
+                  <>
+                    <FileUp className="h-10 w-10 text-green-500" />
+                    <p className="mt-3 text-sm font-medium">{uploadFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(uploadFile.size / 1024).toFixed(1)} KB
+                    </p>
+                    {uploadQuestions.length > 0 && (
+                      <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                        {uploadQuestions.length} questions found
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-muted-foreground/50" />
+                    <p className="mt-3 text-sm font-medium">Click to browse or drag and drop</p>
+                    <p className="text-xs text-muted-foreground">.xlsx or .docx files up to 10 MB</p>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.docx"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </div>
+              {uploadError && (
+                <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{uploadError}</p>
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={resetImportDialog}>
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => {
-                    const qs = parseQuestions(importText);
-                    if (qs.length > 0) {
-                      setQuestions((prev) => {
-                        const existing = new Set(prev.split("\n").filter(Boolean));
-                        return [...prev.split("\n").filter(Boolean), ...qs.filter((q) => !existing.has(q))].join("\n");
-                      });
-                      setImportDialogOpen(false);
-                      setImportText("");
-                    }
-                  }}
-                  disabled={!importText.trim() || parseQuestions(importText).length === 0}
+                  onClick={handleImportUploaded}
+                  disabled={uploadQuestions.length === 0}
                 >
-                  Import {importText.trim() ? parseQuestions(importText).length : ""} Questions
+                  Import {uploadQuestions.length > 0 ? uploadQuestions.length : ""} Questions
                 </Button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <textarea
+                className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder={`Paste your questionnaire here. We support:\n\n1. What is your encryption standard?\n2. How do you handle incidents?\nQ3: Do you have a disaster recovery plan?\n• Are you SOC 2 certified?\n\nOr just lines ending with question marks?`}
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {importText.trim() ? `${parseQuestions(importText).length} questions detected` : "Paste text above to detect questions"}
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={resetImportDialog}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const qs = parseQuestions(importText);
+                      if (qs.length > 0) {
+                        setQuestions((prev) => {
+                          const existing = new Set(prev.split("\n").filter(Boolean));
+                          return [...prev.split("\n").filter(Boolean), ...qs.filter((q) => !existing.has(q))].join("\n");
+                        });
+                        resetImportDialog();
+                      }
+                    }}
+                    disabled={!importText.trim() || parseQuestions(importText).length === 0}
+                  >
+                    Import {importText.trim() ? parseQuestions(importText).length : ""} Questions
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

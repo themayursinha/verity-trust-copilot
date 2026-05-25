@@ -22,6 +22,8 @@ dependencies = [
     "python-jose[cryptography]",
     "bcrypt",
     "python-multipart",
+    "openpyxl",
+    "python-docx",
 ]
 
 [project.optional-dependencies]

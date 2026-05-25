@@ -20,6 +20,8 @@ RUN pip install --no-cache-dir \
     bcrypt \
     "python-jose[cryptography]" \
     python-multipart \
+    openpyxl \
+    python-docx \
     && pip cache purge
 
 WORKDIR /app

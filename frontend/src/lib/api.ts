@@ -183,6 +183,17 @@ export async function getSampleQuestions(): Promise<string[]> {
   return response.data;
 }
 
+export async function importQuestionsFromFile(file: File): Promise<{ questions: string[]; count: number; filename: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post<{ questions: string[]; count: number; filename: string }>(
+    "/api/v1/answers/import-file",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return response.data;
+}
+
 export async function getAnswerGenerations(): Promise<AnswerGeneration[]> {
   const response = await api.get<AnswerGeneration[]>("/api/v1/answers");
   return response.data;

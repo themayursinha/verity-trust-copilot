@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir \
     prometheus-fastapi-instrumentator \
     pynacl \
     bcrypt \
-    "python-jose[cryptography]" \
+    "pyjwt[crypto]" \
     python-multipart \
     openpyxl \
     python-docx \

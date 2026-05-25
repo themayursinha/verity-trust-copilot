@@ -19,7 +19,7 @@ dependencies = [
     "prometheus-fastapi-instrumentator",
     "pynacl",
     "passlib[bcrypt]",
-    "python-jose[cryptography]",
+    "pyjwt[crypto]",
     "bcrypt",
     "python-multipart",
     "openpyxl",

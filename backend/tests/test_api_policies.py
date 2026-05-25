@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_policy(auth_headers, client):
     resp = await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Data Protection Policy",
             "category": "data-protection",
@@ -25,7 +25,7 @@ async def test_create_policy(auth_headers, client):
 @pytest.mark.asyncio
 async def test_list_policies(auth_headers, client):
     await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Policy A",
             "category": "security",
@@ -34,7 +34,7 @@ async def test_list_policies(auth_headers, client):
         headers=auth_headers,
     )
     await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Policy B",
             "category": "security",
@@ -43,7 +43,7 @@ async def test_list_policies(auth_headers, client):
         headers=auth_headers,
     )
 
-    resp = await client.get("/api/v1/policies", headers=auth_headers)
+    resp = await client.get("/api/v1/policies/", headers=auth_headers)
     assert resp.status_code == 200
     assert len(resp.json()) == 2
 
@@ -51,7 +51,7 @@ async def test_list_policies(auth_headers, client):
 @pytest.mark.asyncio
 async def test_update_policy(auth_headers, client):
     create_resp = await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Old Title",
             "category": "security",
@@ -78,7 +78,7 @@ async def test_update_policy(auth_headers, client):
 @pytest.mark.asyncio
 async def test_delete_policy(auth_headers, client):
     create_resp = await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Delete Me",
             "category": "security",

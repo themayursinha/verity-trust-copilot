@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_evidence(auth_headers, client):
     resp = await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "ISO 27001 Certificate",
             "type": "certification",
@@ -29,7 +29,7 @@ async def test_create_evidence(auth_headers, client):
 @pytest.mark.asyncio
 async def test_list_evidence(auth_headers, client):
     await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "Test Evidence",
             "type": "doc",
@@ -43,7 +43,7 @@ async def test_list_evidence(auth_headers, client):
         headers=auth_headers,
     )
 
-    resp = await client.get("/api/v1/evidence", headers=auth_headers)
+    resp = await client.get("/api/v1/evidence/", headers=auth_headers)
     assert resp.status_code == 200
     data = resp.json()
     assert len(data) >= 1
@@ -53,7 +53,7 @@ async def test_list_evidence(auth_headers, client):
 @pytest.mark.asyncio
 async def test_get_evidence_by_id(auth_headers, client):
     create_resp = await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "Get Me",
             "type": "doc",
@@ -82,7 +82,7 @@ async def test_get_evidence_not_found(auth_headers, client):
 @pytest.mark.asyncio
 async def test_delete_evidence(auth_headers, client):
     create_resp = await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "Delete Me",
             "type": "doc",
@@ -108,7 +108,7 @@ async def test_delete_evidence(auth_headers, client):
 async def test_tenant_isolation(auth_headers, client):
     """Verify org B cannot see org A's evidence."""
     await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "Org A Evidence",
             "type": "doc",
@@ -134,6 +134,6 @@ async def test_tenant_isolation(auth_headers, client):
     orgb_token = resp2.json()["access_token"]
     orgb_headers = {"Authorization": f"Bearer {orgb_token}"}
 
-    resp = await client.get("/api/v1/evidence", headers=orgb_headers)
+    resp = await client.get("/api/v1/evidence/", headers=orgb_headers)
     assert resp.status_code == 200
     assert len(resp.json()) == 0

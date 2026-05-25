@@ -18,7 +18,7 @@ async def test_dashboard_empty(auth_headers, client):
 @pytest.mark.asyncio
 async def test_dashboard_with_data(auth_headers, client):
     await client.post(
-        "/api/v1/evidence",
+        "/api/v1/evidence/",
         json={
             "title": "Evidence 1",
             "type": "doc",
@@ -33,7 +33,7 @@ async def test_dashboard_with_data(auth_headers, client):
     )
 
     await client.post(
-        "/api/v1/policies",
+        "/api/v1/policies/",
         json={
             "title": "Policy 1",
             "category": "security",

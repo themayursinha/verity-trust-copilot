@@ -80,11 +80,11 @@ async def test_token_refresh(auth_data, client):
 
 @pytest.mark.asyncio
 async def test_protected_route_without_auth(client):
-    resp = await client.get("/api/v1/evidence")
+    resp = await client.get("/api/v1/evidence/")
     assert resp.status_code == 403
 
 
 @pytest.mark.asyncio
 async def test_protected_route_with_auth(auth_headers, client):
-    resp = await client.get("/api/v1/evidence", headers=auth_headers)
+    resp = await client.get("/api/v1/evidence/", headers=auth_headers)
     assert resp.status_code == 200

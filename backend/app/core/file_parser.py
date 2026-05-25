@@ -90,7 +90,23 @@ def _parse_xlsx(content: bytes) -> str:
 
     wb = openpyxl.load_workbook(BytesIO(content), read_only=True, data_only=True)
     lines: list[str] = []
-    header_keywords = {"category", "question", "domain", "section", "topic", "control", "requirement", "status", "response", "#", "no.", "number", "id", "ref", "reference"}
+    header_keywords = {
+        "category",
+        "question",
+        "domain",
+        "section",
+        "topic",
+        "control",
+        "requirement",
+        "status",
+        "response",
+        "#",
+        "no.",
+        "number",
+        "id",
+        "ref",
+        "reference",
+    }
 
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]

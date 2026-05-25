@@ -230,6 +230,8 @@ async def import_questions_file(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
     if not questions:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No questions found in the file. Please check the format.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No questions found in the file. Please check the format."
+        )
 
     return {"questions": questions, "count": len(questions), "filename": file.filename}

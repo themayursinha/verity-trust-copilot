@@ -34,7 +34,9 @@ async def invite_member(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     active_count = await db.scalar(
-        select(func.count(User.id)).where(User.org_id == current_user.org_id, User.is_active == True)
+        select(func.count(User.id)).where(
+            User.org_id == current_user.org_id, User.is_active
+        )
     )
 
     org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
@@ -205,7 +207,9 @@ async def org_info(
     org_result = await db.execute(select(Organization).where(Organization.id == current_user.org_id))
     org = org_result.scalar_one()
     active_count = await db.scalar(
-        select(func.count(User.id)).where(User.org_id == current_user.org_id, User.is_active == True)
+        select(func.count(User.id)).where(
+            User.org_id == current_user.org_id, User.is_active
+        )
     )
     return {
         "id": org.id,

@@ -1,30 +1,28 @@
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock
+
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.config import settings
+from app.config import settings  # noqa: E402
 
 settings.DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/verity_test"
 settings.SECRET_KEY = "test-secret-key-change-in-production-override-for-testing-only"
 settings.JWT_ALGORITHM = "HS256"
 settings.REDIS_URL = "redis://localhost:6379/0"
 
-from unittest.mock import AsyncMock
-
-import app.services.auth_service as auth_svc
+import app.services.auth_service as auth_svc  # noqa: E402
 
 auth_svc._is_token_blacklisted = AsyncMock(return_value=False)
 auth_svc.invalidate_refresh_family = AsyncMock(return_value=None)
 auth_svc.store_refresh_token_family = AsyncMock(return_value=None)
 
-import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
-from app.database import Base, get_db
-from app.main import app
+from app.database import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
 
 test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
 TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)

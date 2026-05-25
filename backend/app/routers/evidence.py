@@ -140,7 +140,6 @@ async def import_evidence(
     )
     existing_ids = set(result.scalars().all())
 
-    stored: list[EvidenceResponse] = []
     for item in incoming_records:
         if not isinstance(item, dict):
             raise HTTPException(

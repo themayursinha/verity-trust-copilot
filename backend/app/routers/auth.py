@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
 from app.database import get_db
 from app.models.organization import Organization
 from app.models.user import User
@@ -16,9 +15,7 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.services.auth_service import (
-    ACCESS_TOKEN_EXPIRE,
     REFRESH_TOKEN_EXPIRE,
-    blacklist_token,
     create_access_token,
     create_refresh_token,
     decode_token,

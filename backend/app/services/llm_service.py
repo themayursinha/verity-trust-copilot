@@ -30,7 +30,7 @@ async def generate_llm_answer(
         context_text += f"Type: {ev.get('type', 'N/A')}\n"
         context_text += f"Frameworks: {', '.join(ev.get('frameworks', []))}\n"
         context_text += f"Summary: {ev.get('summary', '')}\n"
-        context_text += f"Snippets:\n"
+        context_text += "Snippets:\n"
         for snippet in ev.get("snippets", []):
             context_text += f"  - {snippet}\n"
 

@@ -36,6 +36,7 @@ dev = [
 
 [tool.ruff]
 line-length = 120
+exclude = ["build", "dist", ".venv", "__pycache__", "*.egg-info"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -45,3 +46,8 @@ python_version = "3.12"
 
 [tool.setuptools.packages.find]
 include = ["app*", "emails*"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.14",
+]

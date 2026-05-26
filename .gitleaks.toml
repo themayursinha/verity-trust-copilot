@@ -1,0 +1,26 @@
+# Gitleaks configuration — ignore test data, sample evidence, and dev defaults
+
+title = "Verity Trust Copilot"
+
+[allowlist]
+  description = "Allowlist for dev/test credentials and sample data"
+
+  paths = [
+    '''^backend/tests/''',
+    '''^tests/''',
+    '''^evidence/''',
+    '''^data/''',
+    '''^static/''',
+  ]
+
+  regexes = [
+    '''postgres:postgres''',
+    '''dev-secret-key''',
+    '''testpass\d+''',
+    '''change-me''',
+    '''fake_token''',
+    '''fake''',
+  ]
+
+  commits = []
+  stopwords = []

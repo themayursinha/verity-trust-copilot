@@ -1,0 +1,23 @@
+# Bandit configuration for Verity Trust Copilot
+# https://bandit.readthedocs.io/en/latest/config.html
+
+### Profile: security-focused SAST for production Python
+
+# Exclude test files and dependencies
+exclude_dirs:
+  - backend/tests
+  - backend/.venv
+  - .venv
+  - tests
+  - static
+
+# Skip harmless or intentionally-used patterns
+skips:
+  - B101   # assert — used intentionally in production validation
+  - B404   # subprocess import — not used in attack paths
+  - B603   # subprocess without shell=True — safe
+  - B607   # partial path — ok in container environments
+
+# Low-severity issues — report but don't fail
+# B311: Standard pseudo-random generators (not for crypto)
+# B303: MD5/sha1 — used only for non-crypto hashing

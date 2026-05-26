@@ -27,7 +27,7 @@ jobs:
       - name: Type check with mypy
         run: mypy backend/app/ --config-file backend/pyproject.toml
 
-  typecheck-backend:
+  security:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -35,10 +35,16 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install mypy
-        run: pip install mypy
-      - name: Type check with mypy
-        run: mypy backend/app/
+      - name: Install security tools
+        run: pip install bandit pip-audit
+      - name: Python SAST (Bandit)
+        run: bandit -r backend/app/ -c backend/bandit.yaml
+      - name: Python dependency audit (pip-audit)
+        run: pip-audit -r <(pip freeze | grep -v '^\-e')
+      - name: Secrets scan (gitleaks)
+        uses: gitleaks/gitleaks-action@c5b558837320aa2265325850e60c90f8db9299a8  # v2.7.5
+        with:
+          config-path: .gitleaks.toml
 
   test-python:
     runs-on: ubuntu-24.04
@@ -80,6 +86,10 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --ignore-scripts
         working-directory: frontend
+      - name: npm audit (security)
+        run: npm audit --production --audit-level=high
+        working-directory: frontend
+        continue-on-error: true
       - name: TypeScript type-check
         run: npx tsc -b
         working-directory: frontend

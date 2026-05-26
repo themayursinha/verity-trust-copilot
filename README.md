@@ -8,7 +8,7 @@ from your approved evidence library using semantic embedding retrieval with LLM 
 ## Features
 
 - **AI-Powered Retrieval** — Semantic embedding search (all-MiniLM-L6-v2) understands meaning, not just keywords. Cosine similarity matching across evidence snippets with graceful BM25 fallback when sentence-transformers is unavailable.
-- **LLM Answer Synthesis** — Optional LLM integration (OpenAI-compatible or local Ollama) drafts accurate, well-cited answers from retrieved evidence. Runs fully offline with Ollama + Llama 3.2 for maximum data privacy.
+- **LLM Answer Synthesis** — Plug in any LLM provider with your own API key (BYOK). Supports OpenAI, Anthropic Claude, Google Gemini, Groq, Together AI, DeepSeek, Mistral, xAI Grok, Fireworks, Ollama, and custom OpenAI-compatible endpoints. Run fully offline with Ollama + Llama 3.2.
 - **Knowledge Base Learning** — Approved answers are indexed and reused. Each completed questionnaire improves future results. Search the knowledge base to find previously approved responses.
 - **Conservative by Design** — Never fabricates claims. Every answer cites verifiable evidence with source identifiers. AI-generated answers always carry `needs_human_review: true` until approved.
 - **Questionnaire Management** — Import questions from Excel, Word, and PDF files. Create named questionnaires, track progress, and export completed responses back in the original format (XLSX/DOCX).

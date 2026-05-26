@@ -1,12 +1,13 @@
-"""LLM service for AI-powered answer synthesis. Supports OpenAI and Ollama."""
+"""LLM service for AI-powered answer synthesis. Supports 10+ LLM providers."""
 
 from typing import Any
 
 import httpx
 
 from app.config import settings
+from app.services.llm_providers import get_provider_config
 
-SYSTEM_PROMPT = """You are a security compliance assistant. Draft a concise answer to the customer's security question using ONLY the evidence snippets provided below. 
+SYSTEM_PROMPT = """You are a security compliance assistant. Draft a concise answer to the customer's security question using ONLY the evidence snippets provided below.
 
 Rules:
 - Only use facts from the evidence. If evidence doesn't cover the question, say so honestly.
@@ -17,19 +18,42 @@ Rules:
 - Never fabricate certifications, controls, or capabilities."""
 
 
-def _get_llm_config() -> tuple[str, str, dict[str, str]]:
-    if settings.LLM_PROVIDER == "ollama":
-        api_base = settings.OLLAMA_BASE_URL
+def _resolve_config() -> tuple[str, str, dict[str, str], str]:
+    provider_info = get_provider_config(settings.LLM_PROVIDER) or get_provider_config("custom") or {}
+    api_type = provider_info.get("api_type", "openai")
+    base_url = (
+        provider_info.get("base_url", settings.LLM_API_BASE)
+        if settings.LLM_PROVIDER != "custom"
+        else settings.LLM_API_BASE
+    )
+
+    from app.services.llm_providers import get_model_for_provider
+
+    model = get_model_for_provider(
+        settings.LLM_PROVIDER, settings.LLM_MODEL if settings.LLM_PROVIDER != "ollama" else None
+    )
+
+    if settings.LLM_PROVIDER == "ollama" and not model:
         model = settings.OLLAMA_MODEL
-        headers = {"Content-Type": "application/json"}
-    else:
-        api_base = settings.LLM_API_BASE
+
+    if not model:
         model = settings.LLM_MODEL
+
+    if provider_info.get("no_auth"):
+        headers = {"Content-Type": "application/json"}
+    elif api_type == "anthropic":
+        headers = {
+            "x-api-key": settings.LLM_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        }
+    else:
         headers = {
             "Authorization": f"Bearer {settings.LLM_API_KEY}",
             "Content-Type": "application/json",
         }
-    return api_base, model, headers
+
+    return api_type, base_url, model, headers
 
 
 async def generate_llm_answer(
@@ -37,9 +61,8 @@ async def generate_llm_answer(
     evidence_context: list[dict[str, Any]],
     custom_instructions: str = "",
 ) -> dict[str, Any]:
-    """Generate an LLM-powered answer suggestion using available evidence."""
     if not settings.llm_configured:
-        return {"error": "LLM is not configured. Set LLM_API_KEY or use LLM_PROVIDER=ollama."}
+        return {"error": "LLM is not configured. Set LLM_API_KEY and LLM_PROVIDER in environment."}
 
     context_text = ""
     for i, ev in enumerate(evidence_context, 1):
@@ -55,11 +78,22 @@ async def generate_llm_answer(
     if custom_instructions:
         user_prompt += f"\n\nAdditional instructions: {custom_instructions}"
 
-    api_base, model, headers = _get_llm_config()
+    api_type, base_url, model, headers = _resolve_config()
 
+    if api_type == "anthropic":
+        return await _call_anthropic(base_url, model, headers, user_prompt)
+    elif api_type == "google":
+        return await _call_google(base_url, model, headers, user_prompt)
+    else:
+        return await _call_openai_compatible(base_url, model, headers, user_prompt)
+
+
+async def _call_openai_compatible(
+    base_url: str, model: str, headers: dict[str, str], user_prompt: str
+) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(
-            f"{api_base}/chat/completions",
+            f"{base_url}/chat/completions",
             headers=headers,
             json={
                 "model": model,
@@ -73,10 +107,7 @@ async def generate_llm_answer(
         )
 
     if response.status_code != 200:
-        return {
-            "error": f"LLM API error: {response.status_code}",
-            "detail": response.text[:500],
-        }
+        return {"error": f"LLM API error: {response.status_code}", "detail": response.text[:500]}
 
     data = response.json()
     content = data["choices"][0]["message"]["content"]
@@ -88,6 +119,70 @@ async def generate_llm_answer(
         "usage": {
             "prompt_tokens": usage.get("prompt_tokens", 0),
             "completion_tokens": usage.get("completion_tokens", 0),
+        },
+    }
+
+
+async def _call_anthropic(base_url: str, model: str, headers: dict[str, str], user_prompt: str) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(
+            f"{base_url}/messages",
+            headers=headers,
+            json={
+                "model": model,
+                "max_tokens": settings.LLM_MAX_TOKENS,
+                "temperature": 0.3,
+                "system": SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_prompt}],
+            },
+        )
+
+    if response.status_code != 200:
+        return {"error": f"Anthropic API error: {response.status_code}", "detail": response.text[:500]}
+
+    data = response.json()
+    content = data["content"][0]["text"]
+    usage = data.get("usage", {})
+
+    return {
+        "answer_text": content,
+        "model": data.get("model", model),
+        "usage": {
+            "prompt_tokens": usage.get("input_tokens", 0),
+            "completion_tokens": usage.get("output_tokens", 0),
+        },
+    }
+
+
+async def _call_google(base_url: str, model: str, headers: dict[str, str], user_prompt: str) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(
+            f"{base_url}/models/{model}:generateContent",
+            params={"key": settings.LLM_API_KEY},
+            headers={"Content-Type": "application/json"},
+            json={
+                "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                "contents": [{"parts": [{"text": user_prompt}]}],
+                "generationConfig": {
+                    "maxOutputTokens": settings.LLM_MAX_TOKENS,
+                    "temperature": 0.3,
+                },
+            },
+        )
+
+    if response.status_code != 200:
+        return {"error": f"Gemini API error: {response.status_code}", "detail": response.text[:500]}
+
+    data = response.json()
+    content = data["candidates"][0]["content"]["parts"][0]["text"]
+    usage = data.get("usageMetadata", {})
+
+    return {
+        "answer_text": content,
+        "model": model,
+        "usage": {
+            "prompt_tokens": usage.get("promptTokenCount", 0),
+            "completion_tokens": usage.get("candidatesTokenCount", 0),
         },
     }
 

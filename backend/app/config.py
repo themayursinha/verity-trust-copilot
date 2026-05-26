@@ -32,7 +32,9 @@ class Settings(BaseSettings):
 
     @property
     def llm_configured(self) -> bool:
-        return bool(self.LLM_API_KEY) or self.LLM_PROVIDER == "ollama"
+        if self.LLM_PROVIDER == "ollama":
+            return True
+        return bool(self.LLM_API_KEY)
 
     @property
     def vanta_configured(self) -> bool:

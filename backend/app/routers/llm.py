@@ -10,6 +10,7 @@ from app.database import get_db
 from app.dependencies import get_current_active_user
 from app.models.evidence import EvidenceRecord
 from app.models.user import User
+from app.services.llm_providers import list_providers as get_providers, get_provider_config
 from app.services.llm_service import generate_llm_answer
 
 
@@ -30,6 +31,18 @@ class LLMGenerateResponse(BaseModel):
 router = APIRouter(prefix="/api/v1/llm", tags=["llm"])
 
 
+@router.get("/providers")
+async def list_providers(
+    current_user: User = Depends(get_current_active_user),
+):
+    providers = get_providers()
+    return {
+        "providers": providers,
+        "current": settings.LLM_PROVIDER,
+        "count": len(providers),
+    }
+
+
 @router.post("/suggest", response_model=LLMGenerateResponse)
 async def suggest_answer(
     body: LLMGenerateRequest,
@@ -39,7 +52,7 @@ async def suggest_answer(
     if not settings.llm_configured:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="LLM is not configured. Set LLM_API_KEY in environment.",
+            detail="LLM is not configured. Set LLM_API_KEY and LLM_PROVIDER in environment.",
         )
 
     result = await db.execute(
@@ -89,12 +102,14 @@ async def suggest_answer(
 async def llm_status(
     current_user: User = Depends(get_current_active_user),
 ):
+    provider_info = get_provider_config(settings.LLM_PROVIDER)
+    provider_name = provider_info["name"] if provider_info else settings.LLM_PROVIDER
+
     return {
         "configured": settings.llm_configured,
         "provider": settings.LLM_PROVIDER,
-        "model": settings.OLLAMA_MODEL
-        if settings.LLM_PROVIDER == "ollama"
-        else (settings.LLM_MODEL if settings.llm_configured else None),
-        "api_base": settings.OLLAMA_BASE_URL if settings.LLM_PROVIDER == "ollama" else settings.LLM_API_BASE,
+        "provider_name": provider_name,
+        "model": settings.LLM_MODEL,
+        "api_type": provider_info.get("api_type", "openai") if provider_info else "openai",
         "synthesis_enabled": settings.AI_SYNTHESIS_ENABLED,
     }

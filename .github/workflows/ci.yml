@@ -35,16 +35,16 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install security tools
-        run: pip install bandit pip-audit
+      - name: Install dependencies and security tools
+        run: pip install "backend/.[dev]" bandit pip-audit
       - name: Python SAST (Bandit)
         run: bandit -r backend/app/ -c backend/bandit.yaml
-      - name: Python dependency audit (pip-audit)
-        run: pip-audit -r <(pip freeze | grep -v '^\-e')
+      - name: Python dependency audit
+        run: pip-audit
       - name: Secrets scan (gitleaks)
-        uses: gitleaks/gitleaks-action@c5b558837320aa2265325850e60c90f8db9299a8  # v2.7.5
-        with:
-          config-path: .gitleaks.toml
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
 
   test-python:
     runs-on: ubuntu-24.04

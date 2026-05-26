@@ -53,7 +53,10 @@ async def create_integration(
 ):
     provider_name = body.get("provider", "")
     if provider_name not in {"aws", "github"}:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unsupported provider: {provider_name}. Use 'aws' or 'github'.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported provider: {provider_name}. Use 'aws' or 'github'.",
+        )
 
     name = body.get("name", f"{provider_name.upper()} Integration")
     config = body.get("config", {})
@@ -64,7 +67,9 @@ async def create_integration(
 
     connected = await provider.connect()
     if not connected:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Connection failed. Verify your credentials.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Connection failed. Verify your credentials."
+        )
 
     integration = Integration(
         org_id=current_user.org_id,
@@ -181,9 +186,7 @@ async def get_test_results(
     )
     results = results_result.scalars().all()
 
-    tests_result = await db.execute(
-        select(ComplianceTest).where(ComplianceTest.integration_id == integration_id)
-    )
+    tests_result = await db.execute(select(ComplianceTest).where(ComplianceTest.integration_id == integration_id))
     tests = {t.id: t.name for t in tests_result.scalars().all()}
 
     return {
@@ -209,9 +212,7 @@ async def integration_dashboard_summary(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    integrations_result = await db.execute(
-        select(Integration).where(Integration.org_id == current_user.org_id)
-    )
+    integrations_result = await db.execute(select(Integration).where(Integration.org_id == current_user.org_id))
     integrations = integrations_result.scalars().all()
 
     total = len(integrations)

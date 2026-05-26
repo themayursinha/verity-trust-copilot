@@ -217,9 +217,7 @@ async def generate_answers(
 
     as_of = parse_date(body.as_of) if body.as_of else date.today()
 
-    ev_result = await db.execute(
-        select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id)
-    )
+    ev_result = await db.execute(select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id))
     evidence_records = ev_result.scalars().all()
 
     chunks = _orm_to_evidence_chunks(evidence_records)
@@ -260,18 +258,20 @@ async def generate_answers(
         else:
             low_count += 1
 
-        answer_items.append({
-            "question": question,
-            "answer_text": answer_text,
-            "confidence": confidence,
-            "confidence_score": confidence_score,
-            "confidence_rationale": rationale,
-            "needs_human_review": confidence != "high",
-            "citations": citations,
-            "freshness": freshness,
-            "source": source,
-            "order_index": i,
-        })
+        answer_items.append(
+            {
+                "question": question,
+                "answer_text": answer_text,
+                "confidence": confidence,
+                "confidence_score": confidence_score,
+                "confidence_rationale": rationale,
+                "needs_human_review": confidence != "high",
+                "citations": citations,
+                "freshness": freshness,
+                "source": source,
+                "order_index": i,
+            }
+        )
 
     generation = AnswerGeneration(
         org_id=current_user.org_id,
@@ -351,7 +351,9 @@ async def regenerate_single_answer(
     current_user: User = Depends(get_current_active_user),
 ):
     ans_result = await db.execute(
-        select(Answer).join(AnswerGeneration).where(
+        select(Answer)
+        .join(AnswerGeneration)
+        .where(
             Answer.id == answer_id,
             AnswerGeneration.org_id == current_user.org_id,
         )
@@ -365,9 +367,7 @@ async def regenerate_single_answer(
 
     question = body.questions[0]
 
-    ev_result = await db.execute(
-        select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id)
-    )
+    ev_result = await db.execute(select(EvidenceRecord).where(EvidenceRecord.org_id == current_user.org_id))
     evidence_records = ev_result.scalars().all()
     chunks = _orm_to_evidence_chunks(evidence_records)
 
@@ -441,7 +441,9 @@ async def assign_answer(
     current_user: User = Depends(get_current_active_user),
 ):
     ans_result = await db.execute(
-        select(Answer).join(AnswerGeneration).where(
+        select(Answer)
+        .join(AnswerGeneration)
+        .where(
             Answer.id == body.answer_id,
             AnswerGeneration.org_id == current_user.org_id,
         )
@@ -489,7 +491,9 @@ async def bulk_assign_answers(
     assigned = 0
     for answer_id in body.answer_ids:
         ans_result = await db.execute(
-            select(Answer).join(AnswerGeneration).where(
+            select(Answer)
+            .join(AnswerGeneration)
+            .where(
                 Answer.id == answer_id,
                 AnswerGeneration.org_id == current_user.org_id,
             )
@@ -511,7 +515,9 @@ async def update_answer(
     current_user: User = Depends(get_current_active_user),
 ):
     ans_result = await db.execute(
-        select(Answer).join(AnswerGeneration).where(
+        select(Answer)
+        .join(AnswerGeneration)
+        .where(
             Answer.id == answer_id,
             AnswerGeneration.org_id == current_user.org_id,
         )
@@ -541,7 +547,9 @@ async def learn_from_approvals(
 
     for answer_id in body.answer_ids:
         ans_result = await db.execute(
-            select(Answer).join(AnswerGeneration).where(
+            select(Answer)
+            .join(AnswerGeneration)
+            .where(
                 Answer.id == answer_id,
                 AnswerGeneration.org_id == current_user.org_id,
             )
@@ -559,13 +567,15 @@ async def learn_from_approvals(
         approval = approval_result.scalar_one_or_none()
 
         if approval and answer.question and answer.answer_text:
-            entries.append({
-                "question": answer.question,
-                "answer_text": answer.answer_text,
-                "confidence": answer.confidence,
-                "citations": answer.citations,
-                "learned_at": date.today().isoformat(),
-            })
+            entries.append(
+                {
+                    "question": answer.question,
+                    "answer_text": answer.answer_text,
+                    "confidence": answer.confidence,
+                    "citations": answer.citations,
+                    "learned_at": date.today().isoformat(),
+                }
+            )
             learned += 1
 
     if entries:

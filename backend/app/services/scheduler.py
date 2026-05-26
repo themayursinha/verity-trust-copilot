@@ -24,7 +24,9 @@ async def _run_integration_check(integration_id: str):
         provider = get_provider(integration.provider, integration.config or {})
         if not provider:
             await db.execute(
-                update(Integration).where(Integration.id == integration_id).values(last_status="error", last_error=f"Unknown provider: {integration.provider}")
+                update(Integration)
+                .where(Integration.id == integration_id)
+                .values(last_status="error", last_error=f"Unknown provider: {integration.provider}")
             )
             await db.commit()
             return
@@ -32,7 +34,9 @@ async def _run_integration_check(integration_id: str):
         connected = await provider.connect()
         if not connected:
             await db.execute(
-                update(Integration).where(Integration.id == integration_id).values(last_status="error", last_error="Connection failed — check credentials")
+                update(Integration)
+                .where(Integration.id == integration_id)
+                .values(last_status="error", last_error="Connection failed — check credentials")
             )
             await db.commit()
             return
@@ -40,7 +44,9 @@ async def _run_integration_check(integration_id: str):
         results = await provider.run_all_tests()
 
         tests_result = await db.execute(
-            select(ComplianceTest).where(ComplianceTest.integration_id == integration_id, ComplianceTest.enabled.is_(True))
+            select(ComplianceTest).where(
+                ComplianceTest.integration_id == integration_id, ComplianceTest.enabled.is_(True)
+            )
         )
         existing_tests = {t.name: t for t in tests_result.scalars().all()}
 
@@ -76,15 +82,23 @@ async def _run_integration_check(integration_id: str):
 
         status = "healthy" if failed == 0 and errors == 0 else ("degraded" if failed > 0 else "error")
         await db.execute(
-            update(Integration).where(Integration.id == integration_id).values(
+            update(Integration)
+            .where(Integration.id == integration_id)
+            .values(
                 last_status=status,
                 last_error=None,
-                last_run_at=select(TestResult.created_at).where(TestResult.integration_id == integration_id).order_by(TestResult.created_at.desc()).limit(1).scalar_subquery(),
+                last_run_at=select(TestResult.created_at)
+                .where(TestResult.integration_id == integration_id)
+                .order_by(TestResult.created_at.desc())
+                .limit(1)
+                .scalar_subquery(),
             )
         )
 
         await db.commit()
-        logger.info(f"Integration {integration.provider}/{integration_id}: {passed} pass, {failed} fail, {errors} errors")
+        logger.info(
+            f"Integration {integration.provider}/{integration_id}: {passed} pass, {failed} fail, {errors} errors"
+        )
 
 
 def start_scheduler():

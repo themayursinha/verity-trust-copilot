@@ -1,6 +1,5 @@
 """Integration tests for the integrations API and providers."""
 
-
 import pytest
 
 

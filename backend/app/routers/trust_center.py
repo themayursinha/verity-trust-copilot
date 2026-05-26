@@ -50,9 +50,7 @@ async def get_settings(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    result = await db.execute(
-        select(TrustCenterSettings).where(TrustCenterSettings.org_id == current_user.org_id)
-    )
+    result = await db.execute(select(TrustCenterSettings).where(TrustCenterSettings.org_id == current_user.org_id))
     settings = result.scalar_one_or_none()
     if not settings:
         return {"enabled": False, "configured": False}
@@ -65,9 +63,7 @@ async def update_settings(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    result = await db.execute(
-        select(TrustCenterSettings).where(TrustCenterSettings.org_id == current_user.org_id)
-    )
+    result = await db.execute(select(TrustCenterSettings).where(TrustCenterSettings.org_id == current_user.org_id))
     settings = result.scalar_one_or_none()
 
     if not settings:
@@ -75,10 +71,21 @@ async def update_settings(
         db.add(settings)
     else:
         allowed = {
-            "enabled", "custom_domain", "page_title", "hero_headline", "hero_subtext",
-            "brand_color", "logo_url", "favicon_url", "show_certifications",
-            "show_controls", "show_policies", "show_ai_chatbot", "show_subscribe",
-            "show_document_requests", "require_nda",
+            "enabled",
+            "custom_domain",
+            "page_title",
+            "hero_headline",
+            "hero_subtext",
+            "brand_color",
+            "logo_url",
+            "favicon_url",
+            "show_certifications",
+            "show_controls",
+            "show_policies",
+            "show_ai_chatbot",
+            "show_subscribe",
+            "show_document_requests",
+            "require_nda",
         }
         for key, value in body.items():
             if key in allowed:
@@ -260,9 +267,7 @@ async def get_analytics(
         .group_by(sqlfunc.date(TrustCenterVisit.created_at))
         .order_by(sqlfunc.date(TrustCenterVisit.created_at))
     )
-    daily_visits = [
-        {"date": str(row.date), "count": row.count} for row in daily_visits_result.all()
-    ]
+    daily_visits = [{"date": str(row.date), "count": row.count} for row in daily_visits_result.all()]
 
     return {
         "period_days": days,

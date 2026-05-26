@@ -34,20 +34,24 @@ class BaseProvider:
                 continue
             method = getattr(self, method_name, None)
             if not method:
-                results.append(TestResult(
-                    test_name=test_def["name"],
-                    status="error",
-                    message=f"Method {method_name} not found on provider",
-                ))
+                results.append(
+                    TestResult(
+                        test_name=test_def["name"],
+                        status="error",
+                        message=f"Method {method_name} not found on provider",
+                    )
+                )
                 continue
             try:
                 result = await method()
                 result.test_name = test_def["name"]
                 results.append(result)
             except Exception as e:
-                results.append(TestResult(
-                    test_name=test_def["name"],
-                    status="error",
-                    message=str(e),
-                ))
+                results.append(
+                    TestResult(
+                        test_name=test_def["name"],
+                        status="error",
+                        message=str(e),
+                    )
+                )
         return results

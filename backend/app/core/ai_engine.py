@@ -130,7 +130,14 @@ class AIEngine:
 
     @staticmethod
     def _chunk_to_text(chunk: EvidenceChunk) -> str:
-        parts = [chunk.title, chunk.evidence_type, " ".join(chunk.frameworks), " ".join(chunk.control_ids), chunk.summary, chunk.snippet]
+        parts = [
+            chunk.title,
+            chunk.evidence_type,
+            " ".join(chunk.frameworks),
+            " ".join(chunk.control_ids),
+            chunk.summary,
+            chunk.snippet,
+        ]
         return " ".join(p for p in parts if p)
 
     def search(self, query: str, top_k: int = 5) -> list[RetrievalResult]:
@@ -291,14 +298,16 @@ class AIEngine:
     def build_citations(self, results: list[RetrievalResult]) -> list[dict[str, Any]]:
         citations = []
         for r in results:
-            citations.append({
-                "source_id": r.chunk.evidence_id,
-                "title": r.chunk.title,
-                "citation": f"[S{r.rank}:{r.chunk.evidence_id}]",
-                "snippet": r.chunk.snippet[:200],
-                "score": round(r.score, 4),
-                "last_reviewed": r.chunk.last_reviewed.isoformat() if r.chunk.last_reviewed else None,
-            })
+            citations.append(
+                {
+                    "source_id": r.chunk.evidence_id,
+                    "title": r.chunk.title,
+                    "citation": f"[S{r.rank}:{r.chunk.evidence_id}]",
+                    "snippet": r.chunk.snippet[:200],
+                    "score": round(r.score, 4),
+                    "last_reviewed": r.chunk.last_reviewed.isoformat() if r.chunk.last_reviewed else None,
+                }
+            )
         return citations
 
     def build_freshness(self, results: list[RetrievalResult]) -> list[dict[str, Any]]:
@@ -307,12 +316,14 @@ class AIEngine:
         freshness = []
         for r in results:
             status, age_days = freshness_status(r.chunk.last_reviewed or date.today(), date.today())
-            freshness.append({
-                "source": r.chunk.title,
-                "status": status,
-                "last_reviewed": r.chunk.last_reviewed.isoformat() if r.chunk.last_reviewed else None,
-                "age_days": age_days,
-            })
+            freshness.append(
+                {
+                    "source": r.chunk.title,
+                    "status": status,
+                    "last_reviewed": r.chunk.last_reviewed.isoformat() if r.chunk.last_reviewed else None,
+                    "age_days": age_days,
+                }
+            )
         return freshness
 
     def build_evidence_context(self, results: list[RetrievalResult]) -> list[dict[str, Any]]:
@@ -333,10 +344,7 @@ class AIEngine:
 
         top = results[0]
         if len(results) == 1:
-            return (
-                f"Based on our {top.chunk.title}, {top.chunk.snippet.strip()} "
-                f"[S1:{top.chunk.evidence_id}]"
-            )
+            return f"Based on our {top.chunk.title}, {top.chunk.snippet.strip()} [S1:{top.chunk.evidence_id}]"
 
         parts = []
         for i, r in enumerate(results):

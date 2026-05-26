@@ -1,8 +1,6 @@
 """Integration tests for the AI-powered answers API."""
 
-
 import pytest
-
 
 
 @pytest.mark.asyncio

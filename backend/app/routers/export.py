@@ -255,9 +255,7 @@ async def export_questionnaire_xlsx(
     if not gen:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer generation not found")
 
-    ans_result = await db.execute(
-        select(Answer).where(Answer.generation_id == gen.id).order_by(Answer.order_index)
-    )
+    ans_result = await db.execute(select(Answer).where(Answer.generation_id == gen.id).order_by(Answer.order_index))
     answers = ans_result.scalars().all()
 
     xlsx_buffer = generate_export_xlsx(gen.id, answers)
@@ -289,9 +287,7 @@ async def export_questionnaire_docx(
     if not gen:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer generation not found")
 
-    ans_result = await db.execute(
-        select(Answer).where(Answer.generation_id == gen.id).order_by(Answer.order_index)
-    )
+    ans_result = await db.execute(select(Answer).where(Answer.generation_id == gen.id).order_by(Answer.order_index))
     answers = ans_result.scalars().all()
 
     docx_buffer = generate_export_docx(answers)

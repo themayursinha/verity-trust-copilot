@@ -15,9 +15,27 @@ class GitHubProvider(BaseProvider):
     provider_name = "github"
 
     test_definitions = [
-        {"name": "Default Branch Protected", "method": "check_branch_protection", "category": "version-control", "frameworks": ["soc2"], "control_ids": ["CC8.1"]},
-        {"name": "No Public Repositories", "method": "check_repo_visibility", "category": "version-control", "frameworks": ["soc2", "iso27001"], "control_ids": ["CC6.1"]},
-        {"name": "Dependabot Alerts Enabled", "method": "check_dependabot", "category": "version-control", "frameworks": ["soc2"], "control_ids": ["CC7.1"]},
+        {
+            "name": "Default Branch Protected",
+            "method": "check_branch_protection",
+            "category": "version-control",
+            "frameworks": ["soc2"],
+            "control_ids": ["CC8.1"],
+        },
+        {
+            "name": "No Public Repositories",
+            "method": "check_repo_visibility",
+            "category": "version-control",
+            "frameworks": ["soc2", "iso27001"],
+            "control_ids": ["CC6.1"],
+        },
+        {
+            "name": "Dependabot Alerts Enabled",
+            "method": "check_dependabot",
+            "category": "version-control",
+            "frameworks": ["soc2"],
+            "control_ids": ["CC7.1"],
+        },
     ]
 
     def __init__(self, config: dict[str, Any]):
@@ -47,7 +65,9 @@ class GitHubProvider(BaseProvider):
         async with httpx.AsyncClient(timeout=15.0) as client:
             page = 1
             while True:
-                resp = await client.get(url, headers=self._headers, params={"per_page": 100, "page": page, "type": "all"})
+                resp = await client.get(
+                    url, headers=self._headers, params={"per_page": 100, "page": page, "type": "all"}
+                )
                 if resp.status_code != 200:
                     break
                 batch = resp.json()
@@ -64,7 +84,9 @@ class GitHubProvider(BaseProvider):
         try:
             repos = await self._list_repos()
             if not repos:
-                return TestResult(test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0})
+                return TestResult(
+                    test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0}
+                )
 
             unprotected = 0
             details: list[dict[str, Any]] = []
@@ -83,9 +105,20 @@ class GitHubProvider(BaseProvider):
 
             total = sum(1 for r in repos if not r.get("archived"))
             if total == 0:
-                return TestResult(test_name="", status="pass", message="No active repositories", evidence={"total_repos": 0})
+                return TestResult(
+                    test_name="", status="pass", message="No active repositories", evidence={"total_repos": 0}
+                )
             status = "fail" if unprotected > 0 else "pass"
-            return TestResult(test_name="", status=status, message=f"{unprotected}/{total} repos without branch protection" if unprotected else "All repos have branch protection", resources_checked=total, resources_failed=unprotected, evidence={"repos": details})
+            return TestResult(
+                test_name="",
+                status=status,
+                message=f"{unprotected}/{total} repos without branch protection"
+                if unprotected
+                else "All repos have branch protection",
+                resources_checked=total,
+                resources_failed=unprotected,
+                evidence={"repos": details},
+            )
         except Exception as e:
             return TestResult(test_name="", status="error", message=str(e))
 
@@ -93,13 +126,24 @@ class GitHubProvider(BaseProvider):
         try:
             repos = await self._list_repos()
             if not repos:
-                return TestResult(test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0})
+                return TestResult(
+                    test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0}
+                )
 
             public_repos = [r for r in repos if not r.get("private") and not r.get("archived")]
             total = len(repos)
             public_count = len(public_repos)
             status = "fail" if public_count > 0 else "pass"
-            return TestResult(test_name="", status=status, message=f"{public_count}/{total} public repositories" if public_count else "All repositories are private", resources_checked=total, resources_failed=public_count, evidence={"public_repos": [r.get("name") for r in public_repos]})
+            return TestResult(
+                test_name="",
+                status=status,
+                message=f"{public_count}/{total} public repositories"
+                if public_count
+                else "All repositories are private",
+                resources_checked=total,
+                resources_failed=public_count,
+                evidence={"public_repos": [r.get("name") for r in public_repos]},
+            )
         except Exception as e:
             return TestResult(test_name="", status="error", message=str(e))
 
@@ -107,7 +151,9 @@ class GitHubProvider(BaseProvider):
         try:
             repos = await self._list_repos()
             if not repos:
-                return TestResult(test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0})
+                return TestResult(
+                    test_name="", status="pass", message="No repositories found", evidence={"total_repos": 0}
+                )
 
             no_dependabot = 0
             details: list[dict[str, Any]] = []
@@ -126,8 +172,19 @@ class GitHubProvider(BaseProvider):
 
             active = sum(1 for r in repos if not r.get("archived"))
             if active == 0:
-                return TestResult(test_name="", status="pass", message="No active repositories", evidence={"total_repos": 0})
+                return TestResult(
+                    test_name="", status="pass", message="No active repositories", evidence={"total_repos": 0}
+                )
             status = "fail" if no_dependabot > 0 else "pass"
-            return TestResult(test_name="", status=status, message=f"{no_dependabot}/{active} repos without Dependabot" if no_dependabot else "Dependabot enabled on all repos", resources_checked=active, resources_failed=no_dependabot, evidence={"repos": details})
+            return TestResult(
+                test_name="",
+                status=status,
+                message=f"{no_dependabot}/{active} repos without Dependabot"
+                if no_dependabot
+                else "Dependabot enabled on all repos",
+                resources_checked=active,
+                resources_failed=no_dependabot,
+                evidence={"repos": details},
+            )
         except Exception as e:
             return TestResult(test_name="", status="error", message=str(e))

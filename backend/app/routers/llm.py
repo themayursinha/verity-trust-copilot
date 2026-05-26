@@ -92,7 +92,9 @@ async def llm_status(
     return {
         "configured": settings.llm_configured,
         "provider": settings.LLM_PROVIDER,
-        "model": settings.OLLAMA_MODEL if settings.LLM_PROVIDER == "ollama" else (settings.LLM_MODEL if settings.llm_configured else None),
+        "model": settings.OLLAMA_MODEL
+        if settings.LLM_PROVIDER == "ollama"
+        else (settings.LLM_MODEL if settings.llm_configured else None),
         "api_base": settings.OLLAMA_BASE_URL if settings.LLM_PROVIDER == "ollama" else settings.LLM_API_BASE,
         "synthesis_enabled": settings.AI_SYNTHESIS_ENABLED,
     }

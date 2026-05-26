@@ -49,9 +49,7 @@ async def _get_org_by_slug(slug: str, db: AsyncSession) -> Organization | None:
 
 
 async def _get_settings(org_id: str, db: AsyncSession) -> TrustCenterSettings | None:
-    result = await db.execute(
-        select(TrustCenterSettings).where(TrustCenterSettings.org_id == org_id)
-    )
+    result = await db.execute(select(TrustCenterSettings).where(TrustCenterSettings.org_id == org_id))
     return result.scalar_one_or_none()
 
 
@@ -79,7 +77,9 @@ async def get_trust_center(
 
     settings = await _get_settings(org.id, db)
     if not settings or not settings.enabled:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trust Center not enabled for this organization")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Trust Center not enabled for this organization"
+        )
 
     await _record_visit(org.id, request, db)
 
@@ -92,29 +92,35 @@ async def get_trust_center(
             )
         )
         for rec in cert_result.scalars().all():
-            certs.append({
-                "id": rec.id,
-                "title": rec.title,
-                "frameworks": rec.frameworks or [],
-                "last_reviewed": rec.last_reviewed.isoformat() if rec.last_reviewed else None,
-            })
+            certs.append(
+                {
+                    "id": rec.id,
+                    "title": rec.title,
+                    "frameworks": rec.frameworks or [],
+                    "last_reviewed": rec.last_reviewed.isoformat() if rec.last_reviewed else None,
+                }
+            )
 
     policies_list = []
     if settings.show_policies:
         pol_result = await db.execute(
-            select(Policy).where(
+            select(Policy)
+            .where(
                 Policy.org_id == org.id,
                 Policy.status == "active",
-            ).limit(20)
+            )
+            .limit(20)
         )
         for p in pol_result.scalars().all():
-            policies_list.append({
-                "id": p.id,
-                "name": p.name,
-                "status": p.status,
-                "last_reviewed": p.last_reviewed.isoformat() if p.last_reviewed else None,
-                "version": p.version,
-            })
+            policies_list.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "status": p.status,
+                    "last_reviewed": p.last_reviewed.isoformat() if p.last_reviewed else None,
+                    "version": p.version,
+                }
+            )
 
     documents = []
     doc_result = await db.execute(
@@ -124,14 +130,16 @@ async def get_trust_center(
         )
     )
     for d in doc_result.scalars().all():
-        documents.append({
-            "id": d.id,
-            "title": d.title,
-            "description": d.description,
-            "document_type": d.document_type,
-            "requires_nda": d.requires_nda,
-            "download_count": d.download_count,
-        })
+        documents.append(
+            {
+                "id": d.id,
+                "title": d.title,
+                "description": d.description,
+                "document_type": d.document_type,
+                "requires_nda": d.requires_nda,
+                "download_count": d.download_count,
+            }
+        )
 
     return {
         "organization": {
@@ -175,9 +183,7 @@ async def trust_center_chat(
         source = "knowledge_base"
         confidence = kb_results[0].get("confidence", "medium")
     else:
-        ev_result = await db.execute(
-            select(EvidenceRecord).where(EvidenceRecord.org_id == org.id)
-        )
+        ev_result = await db.execute(select(EvidenceRecord).where(EvidenceRecord.org_id == org.id))
         evidence_records = ev_result.scalars().all()
 
         from app.core.ai_engine import EvidenceChunk

@@ -17,6 +17,7 @@ from app.routers import (
     evidence,
     export,
     health,
+    integrations,
     llm,
     org,
     pentests,
@@ -34,6 +35,8 @@ setup_logging()
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    from app.services.scheduler import start_scheduler
+    start_scheduler()
     yield
     await engine.dispose()
 
@@ -72,4 +75,5 @@ app.include_router(vanta.router)
 app.include_router(reports.router)
 app.include_router(llm.router)
 app.include_router(trust_center.router)
+app.include_router(integrations.router)
 app.include_router(public.router)

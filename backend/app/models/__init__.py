@@ -13,6 +13,7 @@ from app.models.trust_center import (
     TrustCenterDocument,
     TrustCenterAccessRequest,
 )
+from app.models.integration import Integration, ComplianceTest, TestResult
 
 __all__ = [
     "Organization",
@@ -30,4 +31,7 @@ __all__ = [
     "TrustCenterSubscriber",
     "TrustCenterDocument",
     "TrustCenterAccessRequest",
+    "Integration",
+    "ComplianceTest",
+    "TestResult",
 ]

@@ -19,6 +19,8 @@ from your approved evidence library using semantic embedding retrieval with LLM 
 - **JSON Import** — Bulk import evidence from JSON files or programmatic sources. Mock Vanta integration for local demo imports.
 - **Multiple Export Formats** — Export completed questionnaires as XLSX, DOCX, CSV, JSON, or customer-ready Markdown.
 - **Public Trust Center** — Proactively showcase certifications, active policies, and compliance status on a branded public portal. Includes AI chatbot for visitor questions, gated document access with NDA workflow, email subscriptions, and visitor analytics dashboard.
+- **Continuous Compliance Monitoring** — Connect AWS and GitHub for automated evidence collection. Hourly checks verify IAM MFA, S3 encryption, security group rules, CloudTrail logging, branch protection, repo visibility, and Dependabot. Results automatically populate your evidence library.
+- **Integration Framework** — Pluggable provider architecture for AWS, GitHub, and future integrations. Background scheduler runs checks hourly. Test results track pass/fail status with resource-level detail.
 
 ## Quick Start
 

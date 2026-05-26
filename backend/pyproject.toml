@@ -27,6 +27,8 @@ dependencies = [
     "numpy",
     "pypdf",
     "sentence-transformers",
+    "boto3",
+    "apscheduler",
 ]
 
 [project.optional-dependencies]

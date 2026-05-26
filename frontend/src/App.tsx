@@ -12,6 +12,8 @@ import { PentestsPage } from "@/pages/pentests";
 import { SettingsPage } from "@/pages/settings";
 import { NotFoundPage } from "@/pages/not-found";
 import { LandingPage } from "@/pages/landing";
+import TrustCenterAdmin from "@/pages/trust-center-admin";
+import PublicTrustCenter from "@/pages/trust-center-public";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { type ReactNode, useState, useEffect } from "react";
@@ -105,7 +107,9 @@ function AppRoutes() {
         <Route path="policies" element={<PoliciesPage />} />
         <Route path="pentests" element={<PentestsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="trust-center" element={<TrustCenterAdmin />} />
       </Route>
+      <Route path="/trust/:orgSlug" element={<PublicTrustCenter />} />
       <Route path="/" element={<HomeRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

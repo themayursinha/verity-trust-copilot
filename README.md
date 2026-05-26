@@ -18,6 +18,7 @@ from your approved evidence library using semantic embedding retrieval with LLM 
 - **Self-Hosted** — Docker Compose deployment with PostgreSQL and Redis. Your evidence library and credentials stay on your infrastructure. Optional Ollama integration for fully local AI.
 - **JSON Import** — Bulk import evidence from JSON files or programmatic sources. Mock Vanta integration for local demo imports.
 - **Multiple Export Formats** — Export completed questionnaires as XLSX, DOCX, CSV, JSON, or customer-ready Markdown.
+- **Public Trust Center** — Proactively showcase certifications, active policies, and compliance status on a branded public portal. Includes AI chatbot for visitor questions, gated document access with NDA workflow, email subscriptions, and visitor analytics dashboard.
 
 ## Quick Start
 

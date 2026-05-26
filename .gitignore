@@ -19,3 +19,4 @@ secrets/
 *.pem
 *.key
 vanta-parity-plan.md
+threat_intel/

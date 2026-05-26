@@ -21,7 +21,9 @@ from app.routers import (
     org,
     pentests,
     policies,
+    public,
     reports,
+    trust_center,
     vanta,
 )
 
@@ -69,3 +71,5 @@ app.include_router(pentests.router)
 app.include_router(vanta.router)
 app.include_router(reports.router)
 app.include_router(llm.router)
+app.include_router(trust_center.router)
+app.include_router(public.router)

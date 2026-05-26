@@ -6,6 +6,13 @@ from app.models.policy import Policy
 from app.models.pentest import Pentest
 from app.models.audit_log import AuditLog
 from app.models.questionnaire import Questionnaire
+from app.models.trust_center import (
+    TrustCenterSettings,
+    TrustCenterVisit,
+    TrustCenterSubscriber,
+    TrustCenterDocument,
+    TrustCenterAccessRequest,
+)
 
 __all__ = [
     "Organization",
@@ -18,4 +25,9 @@ __all__ = [
     "Pentest",
     "AuditLog",
     "Questionnaire",
+    "TrustCenterSettings",
+    "TrustCenterVisit",
+    "TrustCenterSubscriber",
+    "TrustCenterDocument",
+    "TrustCenterAccessRequest",
 ]

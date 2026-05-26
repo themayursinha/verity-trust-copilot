@@ -166,7 +166,8 @@ def generate_export_docx(answers: list[Answer]) -> BytesIO:
 
         if answer.citations:
             doc.add_heading("Sources", level=4)
-            for citation in answer.citations:
+            citations = answer.citations if isinstance(answer.citations, list) else []
+            for citation in citations:
                 if isinstance(citation, dict):
                     doc.add_paragraph(
                         f"{citation.get('citation', '')} {citation.get('title', '')} "

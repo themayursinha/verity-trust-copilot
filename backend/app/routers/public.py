@@ -115,9 +115,9 @@ async def get_trust_center(
             policies_list.append(
                 {
                     "id": p.id,
-                    "name": p.name,
+                    "name": p.title,
                     "status": p.status,
-                    "last_reviewed": p.last_reviewed.isoformat() if p.last_reviewed else None,
+                    "last_reviewed": p.next_review.isoformat() if p.next_review else None,
                     "version": p.version,
                 }
             )

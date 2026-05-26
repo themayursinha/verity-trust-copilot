@@ -16,8 +16,8 @@ scheduler = AsyncIOScheduler()
 
 async def _run_integration_check(integration_id: str):
     async with async_session_maker() as db:
-        result = await db.execute(select(Integration).where(Integration.id == integration_id))
-        integration = result.scalar_one_or_none()
+        db_result = await db.execute(select(Integration).where(Integration.id == integration_id))
+        integration = db_result.scalar_one_or_none()
         if not integration or not integration.enabled:
             return
 

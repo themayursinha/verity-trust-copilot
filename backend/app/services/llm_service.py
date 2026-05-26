@@ -18,10 +18,10 @@ Rules:
 - Never fabricate certifications, controls, or capabilities."""
 
 
-def _resolve_config() -> tuple[str, str, dict[str, str], str]:
+def _resolve_config() -> tuple[str, str, str, dict[str, str]]:
     provider_info = get_provider_config(settings.LLM_PROVIDER) or get_provider_config("custom") or {}
     api_type = provider_info.get("api_type", "openai")
-    base_url = (
+    base_url = str(
         provider_info.get("base_url", settings.LLM_API_BASE)
         if settings.LLM_PROVIDER != "custom"
         else settings.LLM_API_BASE
@@ -34,10 +34,12 @@ def _resolve_config() -> tuple[str, str, dict[str, str], str]:
     )
 
     if settings.LLM_PROVIDER == "ollama" and not model:
-        model = settings.OLLAMA_MODEL
+        model = str(settings.OLLAMA_MODEL)
 
     if not model:
-        model = settings.LLM_MODEL
+        model = str(settings.LLM_MODEL)
+
+    model = str(model)
 
     if provider_info.get("no_auth"):
         headers = {"Content-Type": "application/json"}

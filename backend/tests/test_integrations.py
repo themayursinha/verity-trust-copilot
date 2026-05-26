@@ -189,9 +189,11 @@ class TestBaseProvider:
         assert len(results) == 1
         assert results[0].status == "error"
 
+
 class TestLLMProviders:
     def test_list_providers(self):
         from app.services.llm_providers import list_providers
+
         providers = list_providers()
         assert len(providers) >= 10
         ids = [p["id"] for p in providers]
@@ -203,6 +205,7 @@ class TestLLMProviders:
 
     def test_get_known_provider(self):
         from app.services.llm_providers import get_provider_config
+
         config = get_provider_config("openai")
         assert config is not None
         assert config["name"] == "OpenAI"
@@ -210,21 +213,25 @@ class TestLLMProviders:
 
     def test_get_ollama_has_no_auth(self):
         from app.services.llm_providers import get_provider_config
+
         config = get_provider_config("ollama")
         assert config is not None
         assert config.get("no_auth") is True
 
     def test_get_unknown_provider(self):
         from app.services.llm_providers import get_provider_config
+
         config = get_provider_config("nonexistent")
         assert config is None
 
     def test_get_model_default(self):
         from app.services.llm_providers import get_model_for_provider
+
         model = get_model_for_provider("openai")
         assert len(model) > 0
 
     def test_get_model_override(self):
         from app.services.llm_providers import get_model_for_provider
+
         model = get_model_for_provider("openai", "custom-model")
         assert model == "custom-model"

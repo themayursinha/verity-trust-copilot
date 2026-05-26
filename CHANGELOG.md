@@ -4,6 +4,13 @@ All notable changes to Verity Trust Copilot are documented in this file.
 
 ## [0.2.0] - 2026-05-26
 
+### Multi-Provider LLM (BYOK)
+- Support for 10+ LLM providers: OpenAI, Anthropic Claude, Google Gemini, Groq, Together AI, DeepSeek, Mistral, xAI Grok, Fireworks, Ollama, and custom OpenAI-compatible endpoints.
+- Native API support for Anthropic Messages API and Google Gemini generateContent API.
+- Provider presets with pre-configured base URLs and recommended models.
+- `GET /api/v1/llm/providers` endpoint lists all available providers with model options.
+- BYOK (Bring Your Own Key) model — configure `LLM_PROVIDER` and `LLM_API_KEY` for any service. Ollama requires no API key.
+
 ### AI Engine (Phase 1)
 - **Semantic embedding retrieval** replacing BM25 keyword search with sentence-transformers (all-MiniLM-L6-v2) and cosine similarity. Graceful BM25 fallback when sentence-transformers is unavailable.
 - **LLM answer synthesis** wired into the main answer generation pipeline. Supports OpenAI-compatible APIs and local Ollama (llama3.2) for fully offline AI.

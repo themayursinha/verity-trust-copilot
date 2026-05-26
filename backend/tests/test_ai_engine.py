@@ -3,13 +3,13 @@
 import sys
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.core.ai_engine import AIEngine, EvidenceChunk, GeneratedAnswer, get_ai_engine, reset_ai_engine
+from app.core.ai_engine import AIEngine, EvidenceChunk, get_ai_engine, reset_ai_engine
 
 
 @pytest.fixture

@@ -1,10 +1,8 @@
 """Integration tests for the AI-powered answers API."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.core.ai_engine import reset_ai_engine
 
 
 @pytest.mark.asyncio

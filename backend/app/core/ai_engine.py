@@ -151,7 +151,7 @@ class AIEngine:
             norms = np.linalg.norm(self._kb_embeddings, axis=1) * np.linalg.norm(query_vec)
             similarities = scores / (norms + 1e-8)
 
-            results = []
+            results: list[dict[str, Any]] = []
             indices = np.argsort(similarities)[::-1]
             for idx in indices:
                 score = float(similarities[idx])
@@ -167,9 +167,9 @@ class AIEngine:
 
     def _semantic_search(self, query: str, top_k: int) -> list[RetrievalResult]:
         try:
-            query_vec = self._model.encode([query], convert_to_numpy=True, show_progress_bar=False)  # type: ignore[union-attr]
-            scores = np.dot(self._embeddings, query_vec.T).flatten()  # type: ignore[index]
-            norms = np.linalg.norm(self._embeddings, axis=1) * np.linalg.norm(query_vec)  # type: ignore[arg-type]
+            query_vec = self._model.encode([query], convert_to_numpy=True, show_progress_bar=False)
+            scores = np.dot(self._embeddings, query_vec.T).flatten()
+            norms = np.linalg.norm(self._embeddings, axis=1) * np.linalg.norm(query_vec)
             similarities = scores / (norms + 1e-8)
         except Exception as e:
             logger.error(f"Semantic search failed: {e}")

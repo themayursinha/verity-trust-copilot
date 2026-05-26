@@ -17,7 +17,7 @@ Rules:
 - Never fabricate certifications, controls, or capabilities."""
 
 
-def _get_llm_config() -> tuple[str, str, str, dict[str, str]]:
+def _get_llm_config() -> tuple[str, str, dict[str, str]]:
     if settings.LLM_PROVIDER == "ollama":
         api_base = settings.OLLAMA_BASE_URL
         model = settings.OLLAMA_MODEL

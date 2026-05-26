@@ -1,4 +1,4 @@
-"""LLM service for generating answer suggestions when BM25 confidence is low."""
+"""LLM service for AI-powered answer synthesis. Supports OpenAI and Ollama."""
 
 from typing import Any
 
@@ -17,13 +17,29 @@ Rules:
 - Never fabricate certifications, controls, or capabilities."""
 
 
+def _get_llm_config() -> tuple[str, str, str, dict[str, str]]:
+    if settings.LLM_PROVIDER == "ollama":
+        api_base = settings.OLLAMA_BASE_URL
+        model = settings.OLLAMA_MODEL
+        headers = {"Content-Type": "application/json"}
+    else:
+        api_base = settings.LLM_API_BASE
+        model = settings.LLM_MODEL
+        headers = {
+            "Authorization": f"Bearer {settings.LLM_API_KEY}",
+            "Content-Type": "application/json",
+        }
+    return api_base, model, headers
+
+
 async def generate_llm_answer(
     question: str,
     evidence_context: list[dict[str, Any]],
+    custom_instructions: str = "",
 ) -> dict[str, Any]:
     """Generate an LLM-powered answer suggestion using available evidence."""
     if not settings.llm_configured:
-        return {"error": "LLM is not configured. Set LLM_API_KEY."}
+        return {"error": "LLM is not configured. Set LLM_API_KEY or use LLM_PROVIDER=ollama."}
 
     context_text = ""
     for i, ev in enumerate(evidence_context, 1):
@@ -36,16 +52,17 @@ async def generate_llm_answer(
             context_text += f"  - {snippet}\n"
 
     user_prompt = f"Question:\n{question}\n\nAvailable Evidence:\n{context_text}\n\nDraft an answer:"
+    if custom_instructions:
+        user_prompt += f"\n\nAdditional instructions: {custom_instructions}"
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    api_base, model, headers = _get_llm_config()
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(
-            f"{settings.LLM_API_BASE}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {settings.LLM_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            f"{api_base}/chat/completions",
+            headers=headers,
             json={
-                "model": settings.LLM_MODEL,
+                "model": model,
                 "messages": [
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt},
@@ -67,9 +84,19 @@ async def generate_llm_answer(
 
     return {
         "answer_text": content,
-        "model": data.get("model", settings.LLM_MODEL),
+        "model": data.get("model", model),
         "usage": {
             "prompt_tokens": usage.get("prompt_tokens", 0),
             "completion_tokens": usage.get("completion_tokens", 0),
         },
     }
+
+
+async def generate_batch_answers(
+    questions: list[str],
+    evidence_context: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for question in questions:
+        results.append(await generate_llm_answer(question, evidence_context))
+    return results

@@ -1,20 +1,23 @@
 # Verity Trust Copilot
 
-**Self-hosted security questionnaire automation.** Generate accurate, citation-backed answers
-from your approved evidence library using field-weighted BM25 retrieval.
+**Self-hosted security questionnaire automation powered by AI.** Generate accurate, citation-backed answers
+from your approved evidence library using semantic embedding retrieval with LLM synthesis.
 
 [![CI](https://github.com/themayursinha/verity-trust-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/themayursinha/verity-trust-copilot/actions/workflows/ci.yml)
 
 ## Features
 
-- **BM25-Powered Retrieval** — Field-weighted lexical scoring with synonym expansion across titles, frameworks, control IDs, and evidence snippets. TF saturation (k1=1.5) and smoothed IDF prevent keyword spam from dominating results.
-- **Conservative by Design** — Never fabricates claims. Every answer cites verifiable evidence with source identifiers (e.g. `[S1:encryption-and-key-management]`). Low-confidence answers are flagged `needs_human_review: true`.
-- **Compliance Dashboard** — Track framework coverage for ISO 27001, SOC 2, GDPR, and DORA. Monitor evidence freshness, approval statistics, policy summaries, and recent activity in a single view.
-- **Answer Templates** — 11 domain-specific template categories (encryption, GDPR, access control, etc.) structure responses with appropriate framing, caveats, and review guidance.
-- **Team Collaboration** — Multi-tenant architecture with RBAC roles (admin, editor, viewer). Approve, reject, and annotate answers with reviewer notes.
-- **Self-Hosted** — Docker Compose deployment with PostgreSQL and Redis. Your evidence library, questionnaire data, and credentials stay on your infrastructure.
+- **AI-Powered Retrieval** — Semantic embedding search (all-MiniLM-L6-v2) understands meaning, not just keywords. Cosine similarity matching across evidence snippets with graceful BM25 fallback when sentence-transformers is unavailable.
+- **LLM Answer Synthesis** — Optional LLM integration (OpenAI-compatible or local Ollama) drafts accurate, well-cited answers from retrieved evidence. Runs fully offline with Ollama + Llama 3.2 for maximum data privacy.
+- **Knowledge Base Learning** — Approved answers are indexed and reused. Each completed questionnaire improves future results. Search the knowledge base to find previously approved responses.
+- **Conservative by Design** — Never fabricates claims. Every answer cites verifiable evidence with source identifiers. AI-generated answers always carry `needs_human_review: true` until approved.
+- **Questionnaire Management** — Import questions from Excel, Word, and PDF files. Create named questionnaires, track progress, and export completed responses back in the original format (XLSX/DOCX).
+- **Question Assignment** — Delegate individual answers or entire questionnaires to team members. View assigned questions, bulk assign, and track completion status.
+- **Compliance Dashboard** — Track framework coverage for ISO 27001, SOC 2, GDPR, and DORA. Monitor evidence freshness, approval statistics, policy summaries, and recent activity.
+- **Team Collaboration** — Multi-tenant architecture with RBAC roles (admin, editor, viewer). Approve, reject, and annotate answers with reviewer notes and audit trails.
+- **Self-Hosted** — Docker Compose deployment with PostgreSQL and Redis. Your evidence library and credentials stay on your infrastructure. Optional Ollama integration for fully local AI.
 - **JSON Import** — Bulk import evidence from JSON files or programmatic sources. Mock Vanta integration for local demo imports.
-- **Export Formats** — Export completed questionnaires as CSV, JSON, or customer-ready Markdown reports designed for human approval before sending.
+- **Multiple Export Formats** — Export completed questionnaires as XLSX, DOCX, CSV, JSON, or customer-ready Markdown.
 
 ## Quick Start
 

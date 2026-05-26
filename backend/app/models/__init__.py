@@ -5,6 +5,7 @@ from app.models.answer import AnswerGeneration, Answer, Approval
 from app.models.policy import Policy
 from app.models.pentest import Pentest
 from app.models.audit_log import AuditLog
+from app.models.questionnaire import Questionnaire
 
 __all__ = [
     "Organization",
@@ -16,4 +17,5 @@ __all__ = [
     "Policy",
     "Pentest",
     "AuditLog",
+    "Questionnaire",
 ]

@@ -18,3 +18,4 @@ dist/
 secrets/
 *.pem
 *.key
+vanta-parity-plan.md

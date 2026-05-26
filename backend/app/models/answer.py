@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, String, Text
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
@@ -14,6 +14,10 @@ class AnswerGeneration(Base):
     org_id = Column(String(36), ForeignKey("organizations.id"), nullable=False)
     as_of_date = Column(Date, nullable=True)
     confidence_counts = Column(JSONB, default={"high": 0, "medium": 0, "low": 0})
+    questionnaire_id = Column(String(36), ForeignKey("questionnaires.id"), nullable=True)
+    original_filename = Column(String(500), nullable=True)
+    original_format = Column(String(20), nullable=True)
+    engine_used = Column(String(50), default="ai")
     created_at = Column(DateTime, default=func.now())
 
 
@@ -25,10 +29,14 @@ class Answer(Base):
     question = Column(Text, nullable=False)
     answer_text = Column(Text, nullable=False)
     confidence = Column(String(50), nullable=True)
+    confidence_score = Column(Integer, nullable=True)
     confidence_rationale = Column(Text, nullable=True)
     needs_human_review = Column(Boolean, default=False)
     citations = Column(JSONB, default=[])
     freshness = Column(JSONB, default=[])
+    assignee_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    order_index = Column(Integer, default=0)
+    source = Column(String(50), default="ai")
     created_at = Column(DateTime, default=func.now())
 
 

@@ -4,7 +4,7 @@ from io import BytesIO
 from fastapi import UploadFile
 
 
-ALLOWED_EXTENSIONS = {".xlsx", ".docx"}
+ALLOWED_EXTENSIONS = {".xlsx", ".docx", ".pdf"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 
 
@@ -79,6 +79,8 @@ async def parse_questionnaire_file(file: UploadFile) -> list[str]:
 
     if ext == ".xlsx":
         text = _parse_xlsx(content)
+    elif ext == ".pdf":
+        text = _parse_pdf(content)
     else:
         text = _parse_docx(content)
 
@@ -149,3 +151,26 @@ def _parse_docx(content: bytes) -> str:
                 paragraphs.append(" | ".join(cells))
 
     return "\n".join(paragraphs)
+
+
+def _parse_pdf(content: bytes) -> str:
+    from io import BytesIO
+
+    from pypdf import PdfReader
+
+    reader = PdfReader(BytesIO(content))
+    paragraphs: list[str] = []
+
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:
+            for line in text.split("\n"):
+                stripped = line.strip()
+                if stripped:
+                    paragraphs.append(stripped)
+
+    return "\n".join(paragraphs)
+
+
+def parse_text_input(text: str) -> list[str]:
+    return _parse_questions_from_text(text)

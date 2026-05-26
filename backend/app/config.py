@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     LLM_API_BASE: str = "https://api.openai.com/v1"
     LLM_MODEL: str = "gpt-4o-mini"
     LLM_MAX_TOKENS: int = 600
+    LLM_PROVIDER: str = "openai"
+    OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
+    OLLAMA_MODEL: str = "llama3.2"
+    EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    AI_SYNTHESIS_ENABLED: bool = True
 
     VANTA_API_KEY: str = ""
     VANTA_API_BASE: str = "https://api.vanta.com"
@@ -27,7 +32,7 @@ class Settings(BaseSettings):
 
     @property
     def llm_configured(self) -> bool:
-        return bool(self.LLM_API_KEY)
+        return bool(self.LLM_API_KEY) or self.LLM_PROVIDER == "ollama"
 
     @property
     def vanta_configured(self) -> bool:

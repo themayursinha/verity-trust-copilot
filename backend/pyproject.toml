@@ -24,6 +24,9 @@ dependencies = [
     "python-multipart",
     "openpyxl",
     "python-docx",
+    "numpy",
+    "pypdf",
+    "sentence-transformers",
 ]
 
 [project.optional-dependencies]

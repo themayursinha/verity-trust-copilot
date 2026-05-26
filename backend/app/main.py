@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-app = FastAPI(title="Verity Trust Copilot", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Verity Trust Copilot", version="0.2.0", lifespan=lifespan)
 
 origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
 app.add_middleware(

@@ -2,6 +2,51 @@
 
 All notable changes to Verity Trust Copilot are documented in this file.
 
+## [0.2.0] - 2026-05-26
+
+### AI Engine (Phase 1)
+- **Semantic embedding retrieval** replacing BM25 keyword search with sentence-transformers (all-MiniLM-L6-v2) and cosine similarity. Graceful BM25 fallback when sentence-transformers is unavailable.
+- **LLM answer synthesis** wired into the main answer generation pipeline. Supports OpenAI-compatible APIs and local Ollama (llama3.2) for fully offline AI.
+- **Knowledge base learning** — approved answers are indexed and reused. Searchable via `/api/v1/answers/knowledge-base/search`.
+- **AI confidence scoring** based on embedding similarity metrics, not just term frequency.
+
+### Questionnaire Automation (Phase 2)
+- **PDF questionnaire import** via pypdf, alongside existing xlsx/docx support.
+- **Original format export** — completed questionnaires exported as filled .xlsx and .docx files matching the original format.
+- **Question assignment and delegation** — assign individual answers or bulk-assign to team members. List assigned answers, track completion.
+- **Questionnaire CRUD** — create named questionnaires, track status (draft → in_progress → completed).
+- **Regenerate answers** — re-generate individual answers with updated evidence or LLM settings.
+- **`/api/v1/auth/me`** endpoint for current user identity.
+
+### Public Trust Center (Phase 3)
+- **Branded public portal** — custom domain, colors, logo, hero text. Zero-auth page at `/trust/:orgSlug`.
+- **AI chatbot widget** — floating chat interface answers visitor questions from the organization's knowledge base and evidence.
+- **Gated document access** — upload documents with NDA requirements. Visitors request access, admins approve/reject.
+- **Email subscriptions** — visitors subscribe for security update notifications.
+- **Visitor analytics** — track visits, unique visitors, chatbot queries, document downloads, daily breakdown.
+- **Configurable sections** — toggle certifications, policies, controls, chatbot, subscriptions, documents per organization.
+
+### Continuous Compliance Monitoring (Phase 4)
+- **Integration framework** — pluggable provider architecture with async test runners.
+- **AWS provider** — 6 compliance tests: IAM MFA enforcement, root access key detection, S3 bucket encryption, S3 public access, overly-permissive security groups, CloudTrail multi-region logging.
+- **GitHub provider** — 3 compliance tests: default branch protection, public repository detection, Dependabot vulnerability alerts enabled.
+- **Background scheduler** — APScheduler runs all enabled integrations every 1 hour.
+- **Test results** — pass/fail/error status with resource-level detail and evidence payloads.
+- **Integration CRUD** — create, list, update, delete integrations with connection validation on creation.
+- **Dashboard summary** — `/api/v1/integrations/dashboard/summary` with healthy/degraded/error counts.
+
+### Fixes
+- CI: resolved ruff format, lint, and mypy type errors across all files (5 iterations).
+- `Policy` model field references corrected in Trust Center public API.
+- SQLAlchemy `Column` type issues resolved in scheduler dict key.
+- LLM service return type corrected for 3-tuple.
+
+### Tests
+- **96 tests passing** (was 32): 19 AI engine unit tests, 16 Trust Center tests, 22 integration tests, 18 answers API tests, plus preserved original 21 tests.
+- Backend test coverage now spans AI engine, answers, evidence policies, pentests, auth, dashboard, Trust Center, and integrations.
+
+---
+
 ## [0.1.0] - 2026-05-24
 
 ### Added

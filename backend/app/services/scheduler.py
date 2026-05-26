@@ -48,7 +48,7 @@ async def _run_integration_check(integration_id: str):
                 ComplianceTest.integration_id == integration_id, ComplianceTest.enabled.is_(True)
             )
         )
-        existing_tests = {t.name: t for t in tests_result.scalars().all()}
+        existing_tests = {str(t.name): t for t in tests_result.scalars().all()}
 
         for result in results:
             if result.test_name not in existing_tests:

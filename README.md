@@ -100,7 +100,9 @@ The production stack includes resource limits, health checks, secrets management
 | ORM | SQLAlchemy 2.0 (async) |
 | Migrations | Alembic |
 | Auth | JWT (RS256) with refresh token rotation |
-| Search | Custom BM25 (field-weighted, synonym-aware) |
+| Search | BM25 (fallback) + Sentence Transformers (all-MiniLM-L6-v2 embeddings) |
+| AI / LLM | OpenAI-compatible API + local Ollama (llama3.2) |
+| Background Jobs | APScheduler (hourly integration checks) |
 | Observability | structlog, Sentry, Prometheus metrics |
 | Rate Limiting | slowapi |
 | Deployment | Docker Compose with health checks and resource limits |
@@ -111,13 +113,17 @@ The production stack includes resource limits, health checks, secrets management
 Once running, visit http://localhost:8000/docs for interactive OpenAPI (Swagger) documentation.
 
 Key endpoint groups:
-- `/api/v1/auth` — Registration, login, token refresh
-- `/api/v1/answers` — Generate and manage questionnaire answers
-- `/api/v1/evidence` — CRUD for evidence records
+- `/api/v1/auth` — Registration, login, token refresh, `/me`
+- `/api/v1/answers` — AI-powered answer generation, questionnaires, assignments, knowledge base
+- `/api/v1/evidence` — CRUD for evidence records, JSON import
 - `/api/v1/dashboard` — Compliance stats and framework coverage
 - `/api/v1/policies` — Security policy management
 - `/api/v1/pentests` — Penetration test tracking
-- `/api/v1/export` — Export answers as CSV, JSON, or Markdown
+- `/api/v1/export` — Export answers as XLSX, DOCX, CSV, JSON, or Markdown
+- `/api/v1/trust-center` — Trust Center settings, documents, analytics, subscribers
+- `/api/v1/integrations` — AWS/GitHub integration management, test results, dashboard
+- `/api/v1/public/trust-center/{org}` — Public Trust Center with AI chatbot (no auth)
+- `/api/v1/llm` — LLM status and answer suggestions
 - `/api/v1/health` — Health check endpoint
 
 ## Configuration

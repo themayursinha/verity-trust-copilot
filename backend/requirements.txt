@@ -315,7 +315,7 @@ sqlalchemy[asyncio]==2.0.50
     # via
     #   alembic
     #   verity-trust-copilot (backend/pyproject.toml)
-starlette==0.52.1
+starlette==1.0.1
     # via
     #   fastapi
     #   prometheus-fastapi-instrumentator

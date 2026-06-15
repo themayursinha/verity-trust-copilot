@@ -166,6 +166,17 @@ bash scripts/restore.sh backups/verity_20260101_120000.sql.gz
 
 ## Development
 
+### Pre-commit Hooks
+
+```bash
+# Install pre-commit (optional, for local pre-push checks)
+pip install pre-commit
+pre-commit install
+
+# Or run manually without installing
+bash scripts/pre-commit.sh
+```
+
 ### Setup
 
 ```bash

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -104,7 +103,6 @@ describe("EvidencePage", () => {
   it("shows loading indicator", async () => {
     vi.mocked(api.getEvidence).mockImplementation(() => new Promise(() => {}) as ReturnType<typeof api.getEvidence>);
     const { container } = render(<EvidencePage />, { wrapper: createWrapper() });
-    const loading = container.querySelector("text");
     await waitFor(() => {
       expect(container.textContent?.includes("Loading")).toBe(true);
     });

@@ -18,8 +18,8 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install backend dev dependencies
-        run: pip install "backend/[dev]"
+      - name: Install backend dev dependencies from lock file
+        run: pip install -r backend/requirements.txt
       - name: Lint with ruff
         run: ruff check backend/
       - name: Check formatting with ruff
@@ -35,8 +35,8 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install dependencies and security tools
-        run: pip install "backend/.[dev]" bandit pip-audit
+      - name: Install backend dependencies from lock file
+        run: pip install -r backend/requirements.txt bandit pip-audit
       - name: Python SAST (Bandit)
         run: bandit -r backend/app/ -c backend/bandit.yaml
       - name: Python dependency audit
@@ -69,8 +69,9 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install backend dev dependencies
-        run: pip install "backend/[dev]"
+      - name: Install backend dependencies from lock file
+        run: pip install -r backend/requirements.txt
+        working-directory: backend
       - name: Run pytest (backend)
         run: pytest backend/tests/ -v
       - name: Run unittest (legacy)
@@ -90,7 +91,6 @@ jobs:
       - name: npm audit (security)
         run: npm audit --production --audit-level=high
         working-directory: frontend
-        continue-on-error: true
       - name: TypeScript type-check
         run: npx tsc -b
         working-directory: frontend

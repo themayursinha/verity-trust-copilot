@@ -1,0 +1,30 @@
+# Semgrep Scan — Approved Rulesets
+# Generated: $(date -Iseconds)
+# Scan mode: run-all
+
+## Rulesets:
+### Baseline:
+p/security-audit
+p/secrets
+
+### Python (87 files, FastAPI):
+p/python
+p/fastapi
+
+### JavaScript/TypeScript (55 files, React):
+p/javascript
+p/typescript
+p/react
+
+### Docker (2 files):
+p/dockerfile
+
+### YAML (39 files, GitHub Actions):
+p/yaml
+p/github-actions
+
+### Third-party:
+https://github.com/trailofbits/semgrep-rules
+https://github.com/elttam/semgrep-rules
+https://github.com/kondukto-io/semgrep-rules
+https://github.com/apiiro/malicious-code-ruleset

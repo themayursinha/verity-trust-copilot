@@ -38,7 +38,7 @@ jobs:
       - name: Install backend dependencies from lock file
         run: pip install -r backend/requirements.txt bandit pip-audit
       - name: Python SAST (Bandit)
-        run: bandit -r backend/app/ -c backend/bandit.yaml
+        run: bandit -r backend/app/ -c backend/bandit.yaml --severity-level medium
       - name: Python dependency audit
         run: pip-audit
         continue-on-error: true

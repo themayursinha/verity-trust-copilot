@@ -27,9 +27,7 @@ async def list_webhooks(
 ):
     if current_user.role not in ("admin",):
         raise HTTPException(status_code=403, detail="Admin required")
-    result = await db.execute(
-        select(Webhook).where(Webhook.org_id == current_user.org_id)
-    )
+    result = await db.execute(select(Webhook).where(Webhook.org_id == current_user.org_id))
     return result.scalars().all()
 
 
@@ -46,6 +44,7 @@ async def create_webhook(
             raise HTTPException(status_code=400, detail=f"Unknown event: {ev}")
 
     import json
+
     webhook = Webhook(
         org_id=current_user.org_id,
         url=data.url,
@@ -88,6 +87,7 @@ async def update_webhook(
             if ev not in WEBHOOK_EVENTS:
                 raise HTTPException(status_code=400, detail=f"Unknown event: {ev}")
         import json
+
         webhook.events = json.dumps(data.events)
     if data.custom_headers is not None:
         webhook.custom_headers = data.custom_headers
@@ -140,6 +140,7 @@ async def test_webhook(
         raise HTTPException(status_code=404, detail="Webhook not found")
 
     from app.services.webhook_service import dispatch_webhook
+
     await dispatch_webhook(db, current_user.org_id, "integration.failed", {"test": True})
     return {"sent": True}
 

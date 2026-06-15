@@ -19,6 +19,7 @@ from app.routers import (
     health,
     integrations,
     llm,
+    notifications,
     org,
     pentests,
     policies,
@@ -26,6 +27,7 @@ from app.routers import (
     reports,
     trust_center,
     vanta,
+    webhooks,
 )
 
 setup_logging()
@@ -77,4 +79,6 @@ app.include_router(reports.router)
 app.include_router(llm.router)
 app.include_router(trust_center.router)
 app.include_router(integrations.router)
+app.include_router(notifications.router)
+app.include_router(webhooks.router)
 app.include_router(public.router)

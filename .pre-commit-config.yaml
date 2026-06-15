@@ -1,0 +1,55 @@
+# pre-commit configuration for Verity Trust Copilot
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: cd backend && ruff check .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: ruff-format
+        name: ruff format check
+        entry: cd backend && ruff format --check .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: mypy
+        name: mypy type check
+        entry: cd backend && mypy app/ --config-file pyproject.toml
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: frontend-lint
+        name: frontend ESLint
+        entry: cd frontend && npm run lint
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: frontend-typecheck
+        name: frontend TypeScript check
+        entry: cd frontend && npx tsc -b
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: frontend-test
+        name: frontend tests
+        entry: cd frontend && npm run test -- --run
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: backend-test
+        name: backend pytest
+        entry: pytest backend/tests/ -v
+        language: system
+        pass_filenames: false
+        always_run: true

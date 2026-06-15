@@ -20,3 +20,4 @@ secrets/
 *.key
 vanta-parity-plan.md
 threat_intel/
+.INTERNAL_PLAN.md

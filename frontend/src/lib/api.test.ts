@@ -1,40 +1,49 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import axios from "axios";
-import * as api from "@/lib/api";
 
 vi.mock("axios", () => {
-  const mockAxios = vi.fn(() => Promise.resolve({ data: {} })) as unknown as typeof axios;
-  (mockAxios as typeof axios & Record<string, unknown>).create = vi.fn(() => mockAxios as never);
-  (mockAxios as typeof axios & Record<string, unknown>).post = vi.fn(() => Promise.resolve({ data: {} }));
-  (mockAxios as typeof axios & Record<string, unknown>).get = vi.fn(() => Promise.resolve({ data: {} }));
-  (mockAxios as typeof axios & Record<string, unknown>).put = vi.fn(() => Promise.resolve({ data: {} }));
-  (mockAxios as typeof axios & Record<string, unknown>).delete = vi.fn(() => Promise.resolve({}));
-  (mockAxios as typeof axios & Record<string, unknown>).interceptors = {
-    request: { use: vi.fn(), eject: vi.fn() },
-    response: { use: vi.fn(), eject: vi.fn() },
+  const mockInstance = {
+    post: vi.fn(() => Promise.resolve({ data: {} })),
+    get: vi.fn(() => Promise.resolve({ data: {} })),
+    put: vi.fn(() => Promise.resolve({ data: {} })),
+    delete: vi.fn(() => Promise.resolve({})),
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+    },
+    defaults: {},
+    Cancel: vi.fn(),
   };
-  return { default: mockAxios, __esModule: true };
+  return {
+    default: {
+      ...mockInstance,
+      create: vi.fn(() => mockInstance),
+      Cancel: vi.fn(),
+      CancelToken: { source: vi.fn() },
+      isCancel: vi.fn(),
+      all: vi.fn(),
+      spread: vi.fn(),
+      Axios: vi.fn(),
+      AxiosError: vi.fn(),
+      isAxiosError: vi.fn(),
+    },
+  };
 });
 
-vi.mock("@/lib/api", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+vi.mock("@/lib/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api")>();
   return { ...actual };
 });
 
-const flushPromises = () => new Promise((r) => setTimeout(r, 0));
-
 describe("API client", () => {
-  let mockAxios: typeof axios;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
-    mockAxios = (await import("@/lib/api")).default;
   });
 
   afterEach(() => {

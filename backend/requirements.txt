@@ -245,7 +245,7 @@ pyjwt[crypto]==2.13.0
     # via verity-trust-copilot (backend/pyproject.toml)
 pynacl==1.6.2
     # via verity-trust-copilot (backend/pyproject.toml)
-pypdf==6.12.2
+pypdf==6.13.0
     # via verity-trust-copilot (backend/pyproject.toml)
 pytest==9.0.3
     # via

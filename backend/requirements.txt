@@ -80,7 +80,7 @@ fastar==0.11.0
     # via
     #   fastapi
     #   fastapi-cloud-cli
-filelock==3.29.0
+filelock==3.29.4
     # via
     #   huggingface-hub
     #   torch

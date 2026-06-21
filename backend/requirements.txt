@@ -106,7 +106,7 @@ httpx==0.28.1
     #   fastapi-cloud-cli
     #   huggingface-hub
     #   verity-trust-copilot (backend/pyproject.toml)
-huggingface-hub==1.16.4
+huggingface-hub==1.20.1
     # via
     #   sentence-transformers
     #   tokenizers

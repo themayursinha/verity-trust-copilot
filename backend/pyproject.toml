@@ -16,7 +16,7 @@ dependencies = [
     "structlog",
     "sentry-sdk",
     "slowapi",
-    "prometheus-fastapi-instrumentator",
+    "prometheus-fastapi-instrumentator>=8.0.0",
     "pynacl",
     "passlib[bcrypt]",
     "pyjwt[crypto]",

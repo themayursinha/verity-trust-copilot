@@ -50,7 +50,7 @@ click==8.4.1
     #   uvicorn
 coverage[toml]==7.14.1
     # via pytest-cov
-cryptography==48.0.0
+cryptography==48.0.1
     # via pyjwt
 cuda-bindings==13.2.0
     # via torch
@@ -218,7 +218,7 @@ pluggy==1.6.0
     #   pytest-cov
 prometheus-client==0.25.0
     # via prometheus-fastapi-instrumentator
-prometheus-fastapi-instrumentator==7.1.0
+prometheus-fastapi-instrumentator==8.0.2
     # via verity-trust-copilot (backend/pyproject.toml)
 pycparser==3.0
     # via cffi
@@ -315,7 +315,7 @@ sqlalchemy[asyncio]==2.0.50
     # via
     #   alembic
     #   verity-trust-copilot (backend/pyproject.toml)
-starlette==0.52.1
+starlette==1.3.1
     # via
     #   fastapi
     #   prometheus-fastapi-instrumentator

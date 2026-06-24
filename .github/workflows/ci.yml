@@ -41,9 +41,8 @@ jobs:
         run: bandit -r backend/app/ -c backend/bandit.yaml --severity-level medium
       - name: Python dependency audit
         run: pip-audit
-        continue-on-error: true
       - name: Secrets scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
         env:
           GITLEAKS_CONFIG: .gitleaks.toml
 

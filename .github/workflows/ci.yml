@@ -36,7 +36,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dependencies from lock file
-        run: pip install --require-hashes -r backend/requirements.txt bandit pip-audit
+        run: |
+          pip install --require-hashes -r backend/requirements.txt
+          pip install bandit pip-audit
       - name: Python SAST (Bandit)
         run: bandit -r backend/app/ -c backend/bandit.yaml --severity-level medium
       - name: Python dependency audit

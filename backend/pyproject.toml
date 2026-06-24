@@ -27,6 +27,7 @@ dependencies = [
     "numpy",
     "pypdf",
     "sentence-transformers",
+    "torch>=2.12.1",
     "boto3",
     "apscheduler",
 ]

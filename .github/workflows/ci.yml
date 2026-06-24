@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dev dependencies from lock file
-        run: pip install -r backend/requirements.txt
+        run: pip install --require-hashes -r backend/requirements.txt
       - name: Lint with ruff
         run: ruff check backend/
       - name: Check formatting with ruff
@@ -36,11 +36,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dependencies from lock file
-        run: pip install -r backend/requirements.txt bandit pip-audit
+        run: pip install --require-hashes -r backend/requirements.txt bandit pip-audit
       - name: Python SAST (Bandit)
         run: bandit -r backend/app/ -c backend/bandit.yaml --severity-level medium
       - name: Python dependency audit
-        run: pip-audit --ignore-vuln CVE-2025-3000
+        run: pip-audit -r backend/requirements.txt
       - name: Secrets scan (gitleaks)
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
         env:
@@ -69,7 +69,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install backend dependencies from lock file
-        run: pip install -r backend/requirements.txt
+        run: pip install --require-hashes -r backend/requirements.txt
       - name: Run pytest (backend)
         run: pytest backend/tests/ -v
       - name: Run unittest (legacy)

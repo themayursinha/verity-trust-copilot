@@ -1,12 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203
 
 RUN groupadd --system app && useradd --system --gid app app
 
 WORKDIR /app
 
-COPY backend/pyproject.toml /app/
+COPY backend/requirements.txt /app/
 
-RUN pip install --no-cache-dir -e . && pip cache purge
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt && pip cache purge
 
 COPY backend/ /app/
 COPY data/ /app/data/

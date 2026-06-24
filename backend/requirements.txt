@@ -80,7 +80,7 @@ fastar==0.11.0
     # via
     #   fastapi
     #   fastapi-cloud-cli
-filelock==3.29.0
+filelock==3.29.4
     # via
     #   huggingface-hub
     #   torch
@@ -233,7 +233,7 @@ pydantic-core==2.46.4
     # via pydantic
 pydantic-extra-types==2.11.1
     # via fastapi
-pydantic-settings==2.14.1
+pydantic-settings==2.14.2
     # via
     #   fastapi
     #   verity-trust-copilot (backend/pyproject.toml)
@@ -245,9 +245,9 @@ pyjwt[crypto]==2.13.0
     # via verity-trust-copilot (backend/pyproject.toml)
 pynacl==1.6.2
     # via verity-trust-copilot (backend/pyproject.toml)
-pypdf==6.12.2
+pypdf==6.13.3
     # via verity-trust-copilot (backend/pyproject.toml)
-pytest==9.0.3
+pytest==9.1.1
     # via
     #   pytest-asyncio
     #   pytest-cov
@@ -264,7 +264,7 @@ python-dotenv==1.2.2
     # via
     #   pydantic-settings
     #   uvicorn
-python-multipart==0.0.29
+python-multipart==0.0.31
     # via
     #   fastapi
     #   verity-trust-copilot (backend/pyproject.toml)

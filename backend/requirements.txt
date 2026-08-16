@@ -376,8 +376,8 @@ cuda-bindings==13.3.1 ; python_full_version < '3.15' and sys_platform == 'linux'
 cuda-pathfinder==1.5.5 ; python_full_version < '3.15' and sys_platform == 'linux' \
     --hash=sha256:0228c023f95d1480f143ef5c8922d27a2ab052087a942e81dc289c9eb8f91689
     # via cuda-bindings
-cuda-toolkit==13.0.3.0 ; sys_platform == 'linux' \
-    --hash=sha256:d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f
+cuda-toolkit==13.3.1 ; sys_platform == 'linux' \
+    --hash=sha256:2ceda460a540323d52469bcfde48b48c1861f6482e4b5ea3cb5bdac00a1b11bd
     # via torch
 deprecated==1.3.1 \
     --hash=sha256:597bfef186b6f60181535a29fbe44865ce137a5079f295b479886c82729d5f3f \

@@ -1033,9 +1033,11 @@ nvidia-cusolver==12.0.4.66 ; (platform_machine == 'aarch64' and sys_platform == 
     --hash=sha256:02c2457eaa9e39de20f880f4bd8820e6a1cfb9f9a34f820eb12a155aa5bc92d2 \
     --hash=sha256:0a759da5dea5c0ea10fd307de75cdeb59e7ea4fcb8add0924859b944babf1112
     # via cuda-toolkit
-nvidia-cusparse==12.6.3.3 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux') \
-    --hash=sha256:2b3c89c88d01ee0e477cb7f82ef60a11a4bcd57b6b87c33f789350b59759360b \
-    --hash=sha256:80bcc4662f23f1054ee334a15c72b8940402975e0eab63178fc7e670aa59472c
+nvidia-cusparse==12.8.6.49 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux') \
+    --hash=sha256:3bf4f2e34e8cfe0c691a4afd7bd479bee49f44dc5fa4940d9d54f720cbd6f2f3 \
+    --hash=sha256:7578698de43ca4f72371076adcba460182c4ae5b2263a094d6e70bc59db7fe10 \
+    --hash=sha256:aeee3f0f53e18345a75c9cb25d34070823d73ae193ab231ee7438fe30abbdfc5 \
+    --hash=sha256:f740691172baae1d498f754cfbb565933c7dbcd7b16544d69fa666283d0715d7
     # via
     #   cuda-toolkit
     #   nvidia-cusolver
